@@ -1,0 +1,11 @@
+import { AlertTriangle, CheckCircle2, FileSpreadsheet, RefreshCw } from "lucide-react";
+
+const rows = [
+  { issuer: "DISTRIBUIDORA CENTRAL SPA", document: "Factura 33 · 7.841", xml: "$428.400", rcv: "$428.400", status: "Coincide", tone: "success" },
+  { issuer: "SERVICIOS FRÍO SUR LTDA.", document: "Factura exenta 34 · 391", xml: "$85.000", rcv: "$85.000", status: "Coincide", tone: "success" },
+  { issuer: "COMERCIAL DEMO SPA", document: "Factura 33 · 992", xml: "—", rcv: "$119.000", status: "Sólo RCV", tone: "warning" },
+];
+
+export function RcvReport() {
+  return <div className="page section-page"><header className="page-header"><div><p className="eyebrow">Cierre mensual · Julio 2026</p><h1>Conciliación de compras</h1><p>Compara el último snapshot RCV con los XML firmados que realmente recibió Completo.</p></div><button className="primary-button" type="button"><RefreshCw size={16} /> Importar snapshot</button></header><div className="summary-grid"><article className="panel summary-card"><FileSpreadsheet size={19} /><div><small>Snapshot actual</small><strong>v2</strong><p>Datos sintéticos · 10 jul</p></div></article><article className="panel summary-card"><CheckCircle2 size={19} /><div><small>Coincidencias</small><strong>18</strong><p>XML y RCV consistentes</p></div></article><article className="panel summary-card"><AlertTriangle size={19} /><div><small>Diferencias</small><strong>1</strong><p>Requiere documento de respaldo</p></div></article></div><section className="panel documents-panel"><div className="table-toolbar"><div><h2>Resultado semántico</h2><p>No se comparan archivos byte a byte</p></div><span className="demo-action">Sin conexión SII</span></div><div className="received-list">{rows.map((row) => <article className="rcv-row" key={row.document}><div><strong>{row.issuer}</strong><p>{row.document}</p></div><div><small>XML recibido</small><strong>{row.xml}</strong></div><div><small>Registro RCV</small><strong>{row.rcv}</strong></div><span className={`received-status ${row.tone}`}>{row.status}</span></article>)}</div></section><section className="tip-card"><AlertTriangle size={21} /><div><strong>Una diferencia no se corrige automáticamente</strong><p>Completo mostrará la causa probable y conservará cada snapshot. Nunca modificará un XML ni decidirá crédito fiscal sin una acción trazable.</p></div></section></div>;
+}

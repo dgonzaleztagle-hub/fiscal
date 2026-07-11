@@ -1,0 +1,41 @@
+# Secrets and tenant material
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.pem
+*.key
+*caf*.xml
+secrets/
+credentials/
+
+# Databases and generated fiscal artifacts
+*.db
+*.sqlite
+*.sqlite3
+output/
+tmp/
+backups/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+
+# Node / Next
+node_modules/
+.next/
+coverage/
+*.log
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

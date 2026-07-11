@@ -1,0 +1,125 @@
+import "server-only";
+import type { components } from "./api.generated";
+import { demoDocuments, type DemoDocument } from "./demo-data";
+
+type DocumentResponse = components["schemas"]["DocumentResponse"];
+type EventResponse = components["schemas"]["EventResponse"];
+
+const labels: Record<number, string> = {
+  33: "Factura electrónica", 34: "Factura exenta", 39: "Boleta electrónica",
+  41: "Boleta exenta", 52: "Guía de despacho", 56: "Nota de débito", 61: "Nota de crédito",
+};
+
+export type FiscalDocumentsResult = {
+  rows: DemoDocument[];
+  source: "engine" | "demo";
+  warning?: string;
+};
+
+export type FiscalDocumentDetail = DemoDocument & {
+  documentId: string;
+  taxpayerRut: string;
+  xmlSha256: string;
+  publicUrl?: string;
+  events: EventResponse[];
+  source: "engine" | "demo";
+  warning?: string;
+};
+
+export async function fiscalDocuments(limit?: number): Promise<FiscalDocumentsResult> {
+  const baseUrl = process.env.FISCAL_API_URL;
+  const token = process.env.FISCAL_API_TOKEN;
+  if (!baseUrl || !token) {
+    return { rows: slice(demoDocuments, limit), source: "demo" };
+  }
+  try {
+    const url = new URL("/v1/fiscal-documents", baseUrl);
+    url.searchParams.set("limit", String(limit ?? 50));
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json() as DocumentResponse[];
+    return {
+      source: "engine",
+      rows: payload.map(mapDocument),
+    };
+  } catch (error) {
+    return {
+      rows: slice(demoDocuments, limit),
+      source: "demo",
+      warning: error instanceof Error ? error.message : "Motor no disponible",
+    };
+  }
+}
+
+export async function fiscalDocument(id: string): Promise<FiscalDocumentDetail | null> {
+  const baseUrl = process.env.FISCAL_API_URL;
+  const token = process.env.FISCAL_API_TOKEN;
+  if (!baseUrl || !token) return demoDetail(id);
+  try {
+    const [recordResponse, eventsResponse] = await Promise.all([
+      engineFetch(`/v1/fiscal-documents/${encodeURIComponent(id)}`, baseUrl, token),
+      engineFetch(`/v1/fiscal-documents/${encodeURIComponent(id)}/events`, baseUrl, token),
+    ]);
+    if (recordResponse.status === 404) return null;
+    if (!recordResponse.ok) throw new Error(`HTTP ${recordResponse.status}`);
+    if (!eventsResponse.ok) throw new Error(`Eventos HTTP ${eventsResponse.status}`);
+    const record = await recordResponse.json() as DocumentResponse;
+    return {
+      ...mapDocument(record),
+      documentId: record.document_id,
+      taxpayerRut: record.taxpayer_rut,
+      xmlSha256: record.xml_sha256,
+      publicUrl: record.public_url,
+      events: await eventsResponse.json() as EventResponse[],
+      source: "engine",
+    };
+  } catch (error) {
+    const fallback = demoDetail(id);
+    return fallback ? { ...fallback, warning: error instanceof Error ? error.message : "Motor no disponible" } : null;
+  }
+}
+
+export function fiscalArtifactUrl(id: string, artifact: "xml" | "pdf") {
+  return `/api/fiscal-documents/${encodeURIComponent(id)}/${artifact}`;
+}
+
+function mapDocument(record: DocumentResponse): DemoDocument {
+  return {
+    id: record.id,
+    kind: String(record.document_type),
+    label: labels[record.document_type] ?? `DTE ${record.document_type}`,
+    folio: new Intl.NumberFormat("es-CL").format(record.folio),
+    receiver: record.counterparty_name,
+    amount: record.total,
+    status: "submitted",
+    statusLabel: record.status === "signed" ? "Firmado local" : record.status,
+    issuedAt: new Intl.DateTimeFormat("es-CL", { dateStyle: "medium" }).format(new Date(`${record.issued_on}T12:00:00`)),
+  };
+}
+
+function demoDetail(id: string): FiscalDocumentDetail | null {
+  const document = demoDocuments.find((item) => item.id === id);
+  if (!document) return null;
+  return {
+    ...document,
+    documentId: `DEMO-${document.kind}-${document.folio}`,
+    taxpayerRut: "12.345.678-5",
+    xmlSha256: "Datos sintéticos: el hash real aparecerá al conectar el motor local.",
+    events: [{ sequence: 1, event_type: "demo_created", occurred_at: "2026-07-11T12:00:00Z", metadata: { synthetic: true } }],
+    source: "demo",
+  };
+}
+
+function engineFetch(path: string, baseUrl: string, token: string) {
+  return fetch(new URL(path, baseUrl), {
+    headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal: AbortSignal.timeout(4000),
+  });
+}
+
+function slice(rows: DemoDocument[], limit?: number) {
+  return limit ? rows.slice(0, limit) : rows;
+}

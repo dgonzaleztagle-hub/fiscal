@@ -1,0 +1,30 @@
+{
+  "name": "completo-fiscal-console",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "generate:api": "openapi-typescript ../dte-engine/build/openapi.json -o lib/api.generated.ts"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.3.2",
+    "lucide-react": "^0.468.0",
+    "next": "^16.2.10",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tailwindcss": "^4.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "openapi-typescript": "^7.10.1",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "postcss": "8.5.16"
+  }
+}

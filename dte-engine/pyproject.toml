@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "completo-dte-engine"
+version = "0.1.0"
+description = "Motor tributario independiente para Completo"
+requires-python = ">=3.12"
+dependencies = [
+  "cryptography>=45,<47",
+  "fastapi>=0.116,<1",
+  "httpx>=0.28,<1",
+  "lxml>=6,<7",
+  "openpyxl>=3.1,<4",
+  "pdf417gen>=0.8.1,<1",
+  "reportlab>=4.4,<5",
+  "tzdata>=2026.1",
+  "uvicorn>=0.35,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pypdf>=6,<7",
+  "pytest>=8,<10",
+  "ruff>=0.12,<1",
+  "zxing-cpp>=3.1,<4",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/completo_dte"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]

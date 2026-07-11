@@ -1,0 +1,58 @@
+"""Adaptadores de persistencia del motor DTE."""
+
+from .folio_ledger import (
+    AttemptState,
+    CafRangeExhausted,
+    DeliveryState,
+    EnvelopeState,
+    FiscalDocumentRecord,
+    FiscalDeliveryRecord,
+    FiscalEnvelopeRecord,
+    FolioLease,
+    FolioLedger,
+    FolioLedgerError,
+    LeaseState,
+    SubmissionAttemptRecord,
+    ReceivedFiscalDocumentRecord,
+    ReceivedDecisionAttemptRecord,
+    ReceivedDecisionRecord,
+    ReceivedDecisionState,
+    ReceivedClassificationRecord,
+    ReceivedSiiObservationRecord,
+    ReceivedLineRecord,
+    ReceivedLineAllocationRecord,
+)
+from .rcv_repository import RcvEntryRecord, RcvRepository, RcvSnapshotRecord
+from .backup import BackupError, BackupManifest, SqliteBackupService
+from .credential_registry import CredentialReferenceRecord, CredentialReferenceRegistry
+
+__all__ = [
+    "AttemptState",
+    "CafRangeExhausted",
+    "DeliveryState",
+    "EnvelopeState",
+    "FiscalDocumentRecord",
+    "FiscalDeliveryRecord",
+    "FiscalEnvelopeRecord",
+    "FolioLease",
+    "FolioLedger",
+    "FolioLedgerError",
+    "LeaseState",
+    "SubmissionAttemptRecord",
+    "RcvEntryRecord",
+    "RcvRepository",
+    "RcvSnapshotRecord",
+    "BackupError",
+    "BackupManifest",
+    "SqliteBackupService",
+    "CredentialReferenceRecord",
+    "CredentialReferenceRegistry",
+    "ReceivedFiscalDocumentRecord",
+    "ReceivedDecisionAttemptRecord",
+    "ReceivedDecisionRecord",
+    "ReceivedDecisionState",
+    "ReceivedClassificationRecord",
+    "ReceivedSiiObservationRecord",
+    "ReceivedLineRecord",
+    "ReceivedLineAllocationRecord",
+]

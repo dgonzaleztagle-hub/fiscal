@@ -1,0 +1,35 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { ArrowLeft, CheckCircle2, Info, ShieldCheck } from "lucide-react";
+
+export function BoletaWizard() {
+  const [name, setName] = useState("Menú del día");
+  const [quantity, setQuantity] = useState(1);
+  const [price, setPrice] = useState(12990);
+  const [exempt, setExempt] = useState(false);
+  const [validated, setValidated] = useState(false);
+  const total = useMemo(() => Math.max(0, quantity * price), [quantity, price]);
+  const type = exempt ? 41 : 39;
+
+  return <div className="page section-page wizard-page">
+    <Link href="/emitir" className="back-link"><ArrowLeft size={15} /> Volver a tipos de documento</Link>
+    <header className="page-header"><div><p className="eyebrow">Emisión guiada · Paso 1 de 3</p><h1>Registrar una venta</h1><p>Completo elegirá la boleta correcta según la tributación de cada producto.</p></div><span className="demo-action">Ensayo sin folios</span></header>
+    <div className="wizard-grid">
+      <form className="panel wizard-form" onSubmit={(event) => { event.preventDefault(); setValidated(true); }}>
+        <div className="form-heading"><div><span>1</span><div><strong>Detalle de la venta</strong><p>Ingresa los valores tal como los vio el cliente.</p></div></div></div>
+        <label>Producto o servicio<input value={name} maxLength={80} required onChange={(event) => { setName(event.target.value); setValidated(false); }} /></label>
+        <div className="field-pair"><label>Cantidad<input type="number" min="0.001" step="0.001" value={quantity} required onChange={(event) => { setQuantity(Number(event.target.value)); setValidated(false); }} /></label><label>Precio final unitario<input type="number" min="0" step="1" value={price} required onChange={(event) => { setPrice(Number(event.target.value)); setValidated(false); }} /></label></div>
+        <label className="tax-choice"><input type="checkbox" checked={exempt} onChange={(event) => { setExempt(event.target.checked); setValidated(false); }} /><span><strong>Este producto está exento de IVA</strong><small>Márcalo sólo si su clasificación tributaria fue configurada como exenta.</small></span></label>
+        <div className="form-notice"><Info size={17} /><p>El precio se ingresa con impuestos incluidos. El motor calcula y redondea los montos tributarios.</p></div>
+        <button className="primary-button" type="submit">Revisar antes de emitir</button>
+      </form>
+      <aside className="panel tax-preview"><p className="eyebrow">Resultado tributario</p><div className="document-preview"><span>{type}</span><div><strong>{exempt ? "Boleta exenta electrónica" : "Boleta electrónica"}</strong><p>Se elegirá automáticamente al confirmar.</p></div></div><dl><div><dt>Ítem</dt><dd>{name || "Sin nombre"}</dd></div><div><dt>Subtotal</dt><dd>{formatCurrency(total)}</dd></div>{!exempt && <><div><dt>Neto incluido</dt><dd>{formatCurrency(Math.round(total / 1.19))}</dd></div><div><dt>IVA incluido</dt><dd>{formatCurrency(total - Math.round(total / 1.19))}</dd></div></>}<div className="total-row"><dt>Total</dt><dd>{formatCurrency(total)}</dd></div></dl>{validated ? <div className="validation-success"><CheckCircle2 size={18} /><div><strong>Borrador coherente</strong><p>La siguiente etapa pedirá confirmación explícita. En demo no se firma ni consume folio.</p></div></div> : <div className="preview-guard"><ShieldCheck size={17} /> Nada se emitirá desde esta pantalla.</div>}</aside>
+    </div>
+  </div>;
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 }).format(value || 0);
+}

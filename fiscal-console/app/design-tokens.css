@@ -1,0 +1,36 @@
+:root {
+  /* Marca Completo: compartidos por Gastro, Fiscal y futuras superficies. */
+  --brand-navy: #1b2a4a;
+  --brand-navy-deep: #111b30;
+  --brand-navy-raised: #213454;
+  --brand-gold: #f2b705;
+  --brand-gold-strong: #dca600;
+  --brand-gold-soft: #fff7dc;
+  --brand-cream: #faf8f5;
+
+  /* Superficie operacional. No dependen de un módulo específico. */
+  --ink: #17243e;
+  --muted: #657083;
+  --line: #e6e0d7;
+  --canvas: var(--brand-cream);
+  --paper: #ffffff;
+  --nav: #14213a;
+  --nav-muted: #a8b3c5;
+  --action: var(--brand-navy);
+  --action-hover: #253b62;
+  --action-soft: #edf1f7;
+  --focus: var(--brand-gold);
+
+  /* Estados conservan significado; la marca nunca suplanta éxito o error. */
+  --mint: #2c9271;
+  --mint-soft: #e7f5ef;
+  --amber: #a66e16;
+  --amber-soft: #fff3d5;
+  --coral: #b94d42;
+  --coral-soft: #fff0ed;
+  --blue: #3d72aa;
+  --blue-soft: #eaf1f8;
+
+  --shadow: 0 1px 2px rgb(27 42 74 / 4%), 0 12px 32px rgb(27 42 74 / 5%);
+  --focus-ring: 0 0 0 3px rgb(242 183 5 / 22%);
+}
