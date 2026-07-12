@@ -19,6 +19,9 @@ certificado, CAF y respuestas del SII.
 - Se extrajo la autenticación por tenant a `api/security.py`. La comparación del secreto
   sigue siendo constante y ahora tiene pruebas específicas para token válido, ausente,
   inválido y configuración incompleta.
+- Se extrajeron los 30 contratos Pydantic a `api/contracts.py` y las proyecciones de
+  registros a `api/projections.py`. `app.py` bajó de 1.546 a 1.170 líneas sin modificar
+  rutas ni modelos OpenAPI.
 - El parser CAF dejó de usar `xml.etree`: ahora usa `lxml` sin DTD, red ni resolución de
   entidades, con límite de 1 MB. Se añadieron regresiones XXE y de tamaño excesivo.
 - Se actualizaron `cryptography` a `>=48.0.1,<49` y el entorno de auditoría a una versión
@@ -69,8 +72,9 @@ No se dividieron artificialmente reglas tributarias sólo para bajar métricas. 
 validaciones de facturas, notas y guías son complejas por sus invariantes y hoy están
 cubiertas por pruebas. Sí quedan dos concentraciones que deben reducirse por etapas:
 
-1. `api/app.py` (1.546 líneas): separar contratos Pydantic y routers por emisión,
-   recepción, reportes y operación. `create_app` seguirá siendo sólo composición.
+1. `api/app.py` (1.170 líneas): los contratos y proyecciones ya están separados; resta
+   extraer routers por emisión, recepción, reportes y operación. `create_app` quedará
+   sólo como composición.
 2. `folio_ledger.py` (1.912 líneas): separar repositorios de documentos, sobres,
    recepción/RCV y entregas conservando una única transacción por operación.
 

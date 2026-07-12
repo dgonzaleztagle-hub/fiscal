@@ -37,7 +37,9 @@ DEMO_ISSUER_RUT = "12345678-5"
 def create_demo_app(*, database_path: Path | None = None):
     """Crea y siembra una API que jamás carga CAF, PFX ni endpoints reales."""
     if database_path is None:
-        database_path = Path(tempfile.mkdtemp(prefix="completo-fiscal-demo-")) / "demo.sqlite3"
+        database_path = (
+            Path(tempfile.mkdtemp(prefix="completo-fiscal-demo-")) / "demo.sqlite3"
+        )
     ledger = FolioLedger(database_path)
     ledger.migrate()
     credential = _signing_credential()
@@ -105,7 +107,9 @@ def create_demo_app(*, database_path: Path | None = None):
 
 def _signing_credential(*, key_size: int = 2048) -> SigningCredential:
     key = rsa.generate_private_key(public_exponent=65537, key_size=key_size)
-    name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "COMPLETO DEMO SINTETICO")])
+    name = x509.Name(
+        [x509.NameAttribute(NameOID.COMMON_NAME, "COMPLETO DEMO SINTETICO")]
+    )
     now = datetime.now(timezone.utc)
     certificate = (
         x509.CertificateBuilder()
@@ -124,7 +128,9 @@ def _trusted_caf(*, document_type: int):
     sii = _signing_credential(key_size=1024)
     payload = _synthetic_caf(document_type=document_type, sii_key=sii.private_key)
     store = SiiCertificateStore()
-    store.add(100 + document_type, sii.certificate.public_bytes(serialization.Encoding.DER))
+    store.add(
+        100 + document_type, sii.certificate.public_bytes(serialization.Encoding.DER)
+    )
     return CafAuthenticityValidator(store).validate(CafLoader().load(payload))
 
 
@@ -132,8 +138,12 @@ def _synthetic_caf(*, document_type: int, sii_key: rsa.RSAPrivateKey) -> bytes:
     # Replica el tamaño de clave fijado por el formato CAF del SII; sólo genera datos sintéticos.
     key = rsa.generate_private_key(public_exponent=65537, key_size=1024)  # noqa: S505
     numbers = key.public_key().public_numbers()
-    modulus = base64.b64encode(numbers.n.to_bytes((numbers.n.bit_length() + 7) // 8, "big")).decode()
-    exponent = base64.b64encode(numbers.e.to_bytes((numbers.e.bit_length() + 7) // 8, "big")).decode()
+    modulus = base64.b64encode(
+        numbers.n.to_bytes((numbers.n.bit_length() + 7) // 8, "big")
+    ).decode()
+    exponent = base64.b64encode(
+        numbers.e.to_bytes((numbers.e.bit_length() + 7) // 8, "big")
+    ).decode()
     private = base64.b64encode(
         key.private_bytes(
             serialization.Encoding.DER,

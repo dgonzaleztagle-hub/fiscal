@@ -1,13 +1,11 @@
 """Frontera HTTP para emitir y recuperar boletas firmadas."""
 
 from datetime import date
-from decimal import Decimal
 
 from lxml import etree
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, Response
-from pydantic import BaseModel, ConfigDict, Field
 
 from completo_dte.application import (
     AnnulDocumentCommand,
@@ -33,10 +31,8 @@ from completo_dte.domain import (
     CorrectionError,
     CorrectionReference,
     CorrectionCode,
-    DispatchAccount,
     DispatchError,
     DispatchTransport,
-    DispatchReason,
     DocumentType,
     FiscalDocumentDraft,
     FiscalDocumentError,
@@ -45,28 +41,19 @@ from completo_dte.domain import (
     InvoiceError,
     Issuer,
     Party,
-    PaymentMethod,
-    PaymentTerms,
-    PriceMode,
     ReceivedDocumentError,
     ReceivedDocumentValidator,
     ReceivedDecision,
     ReceivedDecisionError,
-    ReceivedDecisionType,
     RcvPeriod,
     RcvPurchaseEntry,
-    RcvPurchaseStatus,
-    PurchaseDestination,
     PurchaseLineAllocation,
     RutError,
     SchemaValidationError,
-    TaxCategory,
     TedError,
 )
 from completo_dte.infrastructure import (
     CafRangeExhausted,
-    FiscalDocumentRecord,
-    FiscalDeliveryRecord,
     FolioLedger,
     FolioLedgerError,
     RcvRepository,
@@ -77,340 +64,42 @@ from completo_dte.presentation import (
     ReceiptError,
 )
 from .security import ApiPrincipal, build_authenticator
-
-
-class IssuerRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    rut: str
-    legal_name: str = Field(min_length=1, max_length=100)
-    business_activity: str = Field(min_length=1, max_length=80)
-    activity_code: int = Field(ge=1, le=999_999)
-    address: str | None = Field(default=None, max_length=70)
-    commune: str | None = Field(default=None, max_length=20)
-
-
-class LineRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    name: str = Field(min_length=1, max_length=80)
-    quantity: Decimal = Field(gt=0, max_digits=18, decimal_places=6)
-    unit_price_gross: Decimal = Field(ge=0, max_digits=18, decimal_places=6)
-    discount_gross: Decimal = Field(
-        default=Decimal(0),
-        ge=0,
-        max_digits=18,
-        decimal_places=0,
-    )
-    is_exempt: bool = False
-    unit_measure: str | None = Field(default=None, min_length=1, max_length=4)
-
-
-class ReferenceRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    code: str = Field(min_length=1, max_length=18)
-    reason: str = Field(min_length=1, max_length=90)
-
-
-class DocumentResponse(BaseModel):
-    id: str
-    document_id: str
-    document_type: int
-    folio: int
-    taxpayer_rut: str
-    status: str
-    xml_sha256: str
-    created_at: str
-    xml_url: str
-    public_url: str
-    counterparty_name: str
-    issued_on: str
-    total: int
-
-
-class PartyRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    rut: str
-    legal_name: str = Field(min_length=1, max_length=100)
-    business_activity: str | None = Field(default=None, max_length=80)
-    address: str | None = Field(default=None, max_length=70)
-    commune: str | None = Field(default=None, max_length=20)
-    city: str | None = Field(default=None, max_length=20)
-    email: str | None = Field(default=None, max_length=80)
-    phone: str | None = Field(default=None, max_length=20)
-
-
-class FiscalLineRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    name: str = Field(min_length=1, max_length=80)
-    quantity: Decimal = Field(gt=0, max_digits=18, decimal_places=6)
-    unit_price: Decimal = Field(ge=0, max_digits=18, decimal_places=6)
-    tax_category: TaxCategory
-    price_mode: PriceMode
-    unit_measure: str | None = Field(default=None, min_length=1, max_length=4)
-    description: str | None = Field(default=None, max_length=1000)
-    discount_percent: Decimal = Field(default=Decimal(0), ge=0, le=100)
-    discount_amount: Decimal = Field(default=Decimal(0), ge=0)
-    surcharge_percent: Decimal = Field(default=Decimal(0), ge=0, le=1000)
-    surcharge_amount: Decimal = Field(default=Decimal(0), ge=0)
-
-
-class FiscalReferenceRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    line_number: int = Field(ge=1, le=40)
-    document_type: str = Field(min_length=1, max_length=3)
-    folio: str | None = Field(default=None, max_length=18)
-    issued_on: date | None = None
-    correction_code: CorrectionCode | None = None
-    reason: str | None = Field(default=None, max_length=90)
-
-
-class FiscalDraftRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    branch_id: str = Field(min_length=1, max_length=200)
-    issuer_profile_id: str = Field(min_length=1, max_length=200)
-    document_type: DocumentType
-    issued_on: date
-    lines: tuple[FiscalLineRequest, ...] = Field(min_length=1, max_length=60)
-    receiver: PartyRequest | None = None
-    payment_method: PaymentMethod | None = None
-    payment_terms: PaymentTerms | None = None
-    due_on: date | None = None
-    dispatch_reason: DispatchReason | None = None
-    references: tuple[FiscalReferenceRequest, ...] = Field(default=(), max_length=40)
-    currency: str = Field(default="CLP", min_length=3, max_length=3)
-
-
-class IssueRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    document_type: DocumentType = DocumentType.BOLETA_AFECTA
-    issued_on: date
-    issuer: IssuerRequest
-    lines: tuple[LineRequest | FiscalLineRequest, ...] = Field(
-        min_length=1,
-        max_length=60,
-    )
-    branch_id: str = Field(default="main", min_length=1, max_length=200)
-    issuer_profile_id: str = Field(default="default", min_length=1, max_length=200)
-    receiver: PartyRequest | None = None
-    receiver_rut: str = "66666666-6"
-    receiver_name: str = Field(default="SIN INFORMACION", min_length=1, max_length=40)
-    payment_terms: PaymentTerms | None = None
-    due_on: date | None = None
-    dispatch_reason: DispatchReason | None = None
-    dispatch_account: DispatchAccount | None = None
-    transport: "DispatchTransportRequest | None" = None
-    reference: ReferenceRequest | None = None
-
-
-class DispatchTransportRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    vehicle_plate: str | None = Field(default=None, max_length=8)
-    carrier_rut: str | None = None
-    driver_rut: str | None = None
-    driver_name: str | None = Field(default=None, max_length=30)
-    destination_address: str | None = Field(default=None, max_length=70)
-    destination_commune: str | None = Field(default=None, max_length=20)
-    destination_city: str | None = Field(default=None, max_length=20)
-
-
-class DraftValidationResponse(BaseModel):
-    valid: bool
-    document_type: int
-    document_name: str
-    line_count: int
-    receiver_required: bool
-    builder_status: str
-
-
-class EventResponse(BaseModel):
-    sequence: int
-    event_type: str
-    occurred_at: str
-    metadata: dict[str, object]
-
-
-class EnvelopeResponse(BaseModel):
-    id: str
-    kind: str
-    document_id: str
-    taxpayer_rut: str
-    status: str
-    track_id: str | None
-    xml_sha256: str
-    created_at: str
-    updated_at: str
-
-
-class OperationalAlertResponse(BaseModel):
-    code: str
-    severity: str
-    message: str
-    resource_id: str | None
-
-
-class DeliveryRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    recipient_email: str | None = Field(default=None, max_length=254)
-
-
-class DeliveryResponse(BaseModel):
-    id: str
-    document_record_id: str
-    recipient_email: str
-    status: str
-    attempt_count: int
-    exchange_xml_sha256: str
-    pdf_sha256: str
-    provider_id: str | None
-    error_message: str | None
-    created_at: str
-    updated_at: str
-
-
-class CorrectionIssueRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    document_type: DocumentType
-    issued_on: date
-    issuer: IssuerRequest
-    lines: tuple[FiscalLineRequest, ...] = Field(min_length=1, max_length=60)
-    reason: str = Field(min_length=1, max_length=90)
-
-
-class AnnulmentRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    issued_on: date
-
-
-class TextCorrectionRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    issued_on: date
-    business_activity: str = Field(min_length=1, max_length=40)
-    address: str = Field(min_length=1, max_length=70)
-    commune: str = Field(min_length=1, max_length=20)
-
-
-class ReceivedDocumentResponse(BaseModel):
-    id: str
-    issuer_rut: str
-    issuer_name: str
-    document_type: int
-    folio: int
-    issued_on: str
-    total: int
-    status: str
-    source: str
-    xml_sha256: str
-    sii_received_at: str | None
-    received_at: str
-
-
-class ReceivedDecisionRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    decision: ReceivedDecisionType
-    reason: str | None = Field(default=None, max_length=200)
-
-
-class ReceivedDecisionResponse(BaseModel):
-    id: str
-    received_document_id: str
-    decision: str
-    reason: str | None
-    status: str
-    remote_code: str | None
-    remote_message: str | None
-    created_at: str
-    updated_at: str
-
-
-class ReceivedClassificationRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    provider_id: str | None = Field(default=None, max_length=200)
-    destination: str
-    category_code: str | None = Field(default=None, max_length=100)
-    notes: str | None = Field(default=None, max_length=1000)
-
-
-class ReceivedClassificationResponse(BaseModel):
-    id: str
-    received_document_id: str
-    version: int
-    provider_id: str | None
-    destination: str
-    category_code: str | None
-    notes: str | None
-    classified_by: str
-    created_at: str
-
-
-class RcvEntryRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    issuer_rut: str
-    document_type: DocumentType
-    folio: int = Field(gt=0)
-    issued_on: date
-    exempt_amount: int = Field(ge=0)
-    net_amount: int = Field(ge=0)
-    vat_amount: int = Field(ge=0)
-    total_amount: int = Field(ge=0)
-    status: RcvPurchaseStatus
-
-
-class RcvImportRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    year: int = Field(ge=2000, le=2100)
-    month: int = Field(ge=1, le=12)
-    source: str
-    entries: tuple[RcvEntryRequest, ...] = Field(max_length=10000)
-
-
-class RcvSnapshotResponse(BaseModel):
-    id: str
-    period: str
-    version: int
-    source: str
-    payload_sha256: str
-    imported_at: str
-
-
-class RcvDifferenceResponse(BaseModel):
-    kind: str
-    issuer_rut: str
-    document_type: int
-    folio: int
-    xml_total: int | None
-    rcv_total: int | None
-
-
-class PurchaseLineAllocationRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    line_number: int = Field(gt=0)
-    destination: PurchaseDestination
-    control_plane_ref: str | None = Field(default=None, max_length=200)
-
-
-class PurchaseAllocationsRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    allocations: tuple[PurchaseLineAllocationRequest, ...] = Field(
-        min_length=1, max_length=60
-    )
+from .projections import (
+    _delivery_response,
+    _document_name,
+    _rcv_snapshot_response,
+    _received_classification_response,
+    _received_decision_response,
+    _received_response,
+    _response,
+    _xml_optional,
+    _xml_one,
+)
+from .contracts import (
+    LineRequest,
+    DocumentResponse,
+    FiscalLineRequest,
+    FiscalDraftRequest,
+    IssueRequest,
+    DraftValidationResponse,
+    EventResponse,
+    EnvelopeResponse,
+    OperationalAlertResponse,
+    DeliveryRequest,
+    DeliveryResponse,
+    CorrectionIssueRequest,
+    AnnulmentRequest,
+    TextCorrectionRequest,
+    ReceivedDocumentResponse,
+    ReceivedDecisionRequest,
+    ReceivedDecisionResponse,
+    ReceivedClassificationRequest,
+    ReceivedClassificationResponse,
+    RcvImportRequest,
+    RcvSnapshotResponse,
+    RcvDifferenceResponse,
+    PurchaseAllocationsRequest,
+)
 
 
 def create_app(
@@ -503,10 +192,7 @@ def create_app(
             receiver_required=draft.document_type
             not in {DocumentType.BOLETA_AFECTA, DocumentType.BOLETA_EXENTA},
             builder_status=(
-                "implemented"
-                if draft.document_type
-                in set(DocumentType)
-                else "planned"
+                "implemented" if draft.document_type in set(DocumentType) else "planned"
             ),
         )
 
@@ -522,9 +208,13 @@ def create_app(
         idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     ) -> DocumentResponse:
         if not idempotency_key or not idempotency_key.strip():
-            raise HTTPException(status_code=400, detail="Idempotency-Key es obligatorio")
+            raise HTTPException(
+                status_code=400, detail="Idempotency-Key es obligatorio"
+            )
         if len(idempotency_key) > 200:
-            raise HTTPException(status_code=400, detail="Idempotency-Key excede 200 caracteres")
+            raise HTTPException(
+                status_code=400, detail="Idempotency-Key excede 200 caracteres"
+            )
         try:
             issuer = Issuer(**payload.issuer.model_dump())
             if payload.document_type in {
@@ -545,8 +235,12 @@ def create_app(
                     ),
                     receiver_rut=payload.receiver_rut,
                     receiver_name=payload.receiver_name,
-                    reference_code=payload.reference.code if payload.reference else None,
-                    reference_reason=payload.reference.reason if payload.reference else None,
+                    reference_code=payload.reference.code
+                    if payload.reference
+                    else None,
+                    reference_reason=payload.reference.reason
+                    if payload.reference
+                    else None,
                     document_type=int(payload.document_type),
                 )
                 record = issue_service.issue(command)
@@ -561,8 +255,12 @@ def create_app(
                     )
                 if payload.receiver is None:
                     raise ValueError("La factura requiere receptor identificado")
-                if not all(isinstance(line, FiscalLineRequest) for line in payload.lines):
-                    raise ValueError("Las facturas requieren líneas tributarias con precio neto")
+                if not all(
+                    isinstance(line, FiscalLineRequest) for line in payload.lines
+                ):
+                    raise ValueError(
+                        "Las facturas requieren líneas tributarias con precio neto"
+                    )
                 draft = FiscalDocumentDraft(
                     tenant_id=principal.tenant_id,
                     branch_id=payload.branch_id,
@@ -595,7 +293,9 @@ def create_app(
                     raise ValueError("La guía requiere receptor identificado")
                 if payload.dispatch_reason is None:
                     raise ValueError("La guía requiere motivo del traslado")
-                if not all(isinstance(line, FiscalLineRequest) for line in payload.lines):
+                if not all(
+                    isinstance(line, FiscalLineRequest) for line in payload.lines
+                ):
                     raise ValueError("Las guías requieren líneas tributarias")
                 draft = FiscalDocumentDraft(
                     tenant_id=principal.tenant_id,
@@ -618,14 +318,22 @@ def create_app(
                         draft=draft,
                         dispatch_account=payload.dispatch_account,
                         transport=DispatchTransport(
-                            **(payload.transport.model_dump() if payload.transport else {})
+                            **(
+                                payload.transport.model_dump()
+                                if payload.transport
+                                else {}
+                            )
                         ),
                     )
                 )
             else:
-                raise ValueError("Este tipo documental todavía no tiene emisor implementado")
+                raise ValueError(
+                    "Este tipo documental todavía no tiene emisor implementado"
+                )
         except CafRangeExhausted as exc:
-            raise HTTPException(status_code=409, detail="No quedan folios disponibles") from exc
+            raise HTTPException(
+                status_code=409, detail="No quedan folios disponibles"
+            ) from exc
         except FolioLedgerError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         except SchemaValidationError as exc:
@@ -685,14 +393,23 @@ def create_app(
         idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     ) -> DocumentResponse:
         if issue_correction_service is None:
-            raise HTTPException(status_code=503, detail="Las correcciones no están configuradas")
+            raise HTTPException(
+                status_code=503, detail="Las correcciones no están configuradas"
+            )
         if not idempotency_key or not idempotency_key.strip():
-            raise HTTPException(status_code=400, detail="Idempotency-Key es obligatorio")
-        if payload.document_type not in {DocumentType.NOTA_DEBITO, DocumentType.NOTA_CREDITO}:
+            raise HTTPException(
+                status_code=400, detail="Idempotency-Key es obligatorio"
+            )
+        if payload.document_type not in {
+            DocumentType.NOTA_DEBITO,
+            DocumentType.NOTA_CREDITO,
+        }:
             raise HTTPException(status_code=422, detail="Use nota 56 o 61")
         target = ledger.document_by_id(record_id, tenant_id=principal.tenant_id)
         if target is None:
-            raise HTTPException(status_code=404, detail="Documento original no encontrado")
+            raise HTTPException(
+                status_code=404, detail="Documento original no encontrado"
+            )
         try:
             root = etree.fromstring(
                 target.signed_xml,
@@ -730,7 +447,9 @@ def create_app(
                 )
             )
         except CafRangeExhausted as exc:
-            raise HTTPException(status_code=409, detail="No quedan folios disponibles") from exc
+            raise HTTPException(
+                status_code=409, detail="No quedan folios disponibles"
+            ) from exc
         except FolioLedgerError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         except (CorrectionError, RutError, TedError, ValueError) as exc:
@@ -750,9 +469,13 @@ def create_app(
         idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     ) -> DocumentResponse:
         if issue_correction_service is None:
-            raise HTTPException(status_code=503, detail="Las correcciones no están configuradas")
+            raise HTTPException(
+                status_code=503, detail="Las correcciones no están configuradas"
+            )
         if not idempotency_key or not idempotency_key.strip():
-            raise HTTPException(status_code=400, detail="Idempotency-Key es obligatorio")
+            raise HTTPException(
+                status_code=400, detail="Idempotency-Key es obligatorio"
+            )
         try:
             note = issue_correction_service.annul(
                 AnnulDocumentCommand(
@@ -763,7 +486,9 @@ def create_app(
                 )
             )
         except CafRangeExhausted as exc:
-            raise HTTPException(status_code=409, detail="No quedan folios disponibles") from exc
+            raise HTTPException(
+                status_code=409, detail="No quedan folios disponibles"
+            ) from exc
         except FolioLedgerError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         except (CorrectionError, RutError, TedError, ValueError) as exc:
@@ -783,9 +508,13 @@ def create_app(
         idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     ) -> DocumentResponse:
         if issue_correction_service is None:
-            raise HTTPException(status_code=503, detail="Las correcciones no están configuradas")
+            raise HTTPException(
+                status_code=503, detail="Las correcciones no están configuradas"
+            )
         if not idempotency_key or not idempotency_key.strip():
-            raise HTTPException(status_code=400, detail="Idempotency-Key es obligatorio")
+            raise HTTPException(
+                status_code=400, detail="Idempotency-Key es obligatorio"
+            )
         try:
             note = issue_correction_service.correct_text(
                 CorrectTextCommand(
@@ -799,7 +528,9 @@ def create_app(
                 )
             )
         except CafRangeExhausted as exc:
-            raise HTTPException(status_code=409, detail="No quedan folios disponibles") from exc
+            raise HTTPException(
+                status_code=409, detail="No quedan folios disponibles"
+            ) from exc
         except FolioLedgerError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         except (CorrectionError, RutError, TedError, ValueError) as exc:
@@ -835,7 +566,9 @@ def create_app(
         principal: ApiPrincipal = Depends(authenticate),
     ) -> ReceivedDocumentResponse:
         if received_document_validator is None or resolve_tenant_taxpayer_rut is None:
-            raise HTTPException(status_code=503, detail="La recepción no está configurada")
+            raise HTTPException(
+                status_code=503, detail="La recepción no está configurada"
+            )
         if request.headers.get("content-type", "").split(";", 1)[0] not in {
             "application/xml",
             "text/xml",
@@ -889,7 +622,9 @@ def create_app(
         principal: ApiPrincipal = Depends(authenticate),
     ) -> ReceivedDecisionResponse:
         if received_decision_service is None:
-            raise HTTPException(status_code=503, detail="Las decisiones no están configuradas")
+            raise HTTPException(
+                status_code=503, detail="Las decisiones no están configuradas"
+            )
         try:
             prepared = received_decision_service.prepare(
                 tenant_id=principal.tenant_id,
@@ -916,7 +651,9 @@ def create_app(
         principal: ApiPrincipal = Depends(authenticate),
     ) -> ReceivedDecisionResponse:
         if received_decision_service is None:
-            raise HTTPException(status_code=503, detail="Las decisiones no están configuradas")
+            raise HTTPException(
+                status_code=503, detail="Las decisiones no están configuradas"
+            )
         decision = ledger.received_decision_by_id(
             decision_id, tenant_id=principal.tenant_id
         )
@@ -1039,13 +776,17 @@ def create_app(
                 tenant_id=principal.tenant_id, period=period
             )
             if snapshot is None:
-                raise HTTPException(status_code=404, detail="Snapshot RCV no encontrado")
+                raise HTTPException(
+                    status_code=404, detail="Snapshot RCV no encontrado"
+                )
             differences = rcv_reconciliation_service.reconcile(
                 tenant_id=principal.tenant_id, snapshot=snapshot
             )
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
-        return [RcvDifferenceResponse(**difference.__dict__) for difference in differences]
+        return [
+            RcvDifferenceResponse(**difference.__dict__) for difference in differences
+        ]
 
     @app.get("/v1/reports/monthly/{year}/{month}.csv")
     def export_monthly_csv(
@@ -1276,7 +1017,9 @@ def create_app(
             )
             pdf = renderer.render(record.signed_xml, config)
         except (ReceiptError, ValueError) as exc:
-            raise HTTPException(status_code=503, detail="Representación no disponible") from exc
+            raise HTTPException(
+                status_code=503, detail="Representación no disponible"
+            ) from exc
         return Response(
             pdf,
             media_type="application/pdf",
@@ -1338,17 +1081,22 @@ def create_app(
             )
         except FolioLedgerError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
-        return [EnvelopeResponse(**{
-            "id": envelope.id,
-            "kind": envelope.kind,
-            "document_id": envelope.document_id,
-            "taxpayer_rut": envelope.taxpayer_rut,
-            "status": envelope.status.value,
-            "track_id": envelope.track_id,
-            "xml_sha256": envelope.xml_sha256,
-            "created_at": envelope.created_at,
-            "updated_at": envelope.updated_at,
-        }) for envelope in envelopes]
+        return [
+            EnvelopeResponse(
+                **{
+                    "id": envelope.id,
+                    "kind": envelope.kind,
+                    "document_id": envelope.document_id,
+                    "taxpayer_rut": envelope.taxpayer_rut,
+                    "status": envelope.status.value,
+                    "track_id": envelope.track_id,
+                    "xml_sha256": envelope.xml_sha256,
+                    "created_at": envelope.created_at,
+                    "updated_at": envelope.updated_at,
+                }
+            )
+            for envelope in envelopes
+        ]
 
     @app.get(
         "/v1/operational-alerts",
@@ -1369,21 +1117,24 @@ def create_app(
             raise HTTPException(status_code=404, detail="Boleta no encontrada")
         pdf_url = str(request.url_for("public_receipt_pdf", public_id=public_id))
         body = (
-            "<!doctype html><html lang=\"es-CL\"><head>"
-            "<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\">"
-            "<meta name=\"robots\" content=\"noindex,nofollow\">"
+            '<!doctype html><html lang="es-CL"><head>'
+            '<meta charset="utf-8"><meta name="viewport" content="width=device-width">'
+            '<meta name="robots" content="noindex,nofollow">'
             "<title>Boleta electrónica</title></head>"
-            "<body style=\"font-family:system-ui;max-width:42rem;margin:3rem auto;padding:1rem\">"
+            '<body style="font-family:system-ui;max-width:42rem;margin:3rem auto;padding:1rem">'
             "<h1>Boleta electrónica</h1>"
             f"<p>Emisor: {_html(record.taxpayer_rut)}</p>"
             f"<p>Tipo {record.document_type}, folio {record.folio}</p>"
             f"<p>Emitida: {_html(record.created_at[:10])}</p>"
-            f"<p><a href=\"{_html(pdf_url)}\">Ver representación de la boleta (PDF)</a></p>"
+            f'<p><a href="{_html(pdf_url)}">Ver representación de la boleta (PDF)</a></p>'
             "</body></html>"
         )
         return HTMLResponse(
             body,
-            headers={"Cache-Control": "private, max-age=300", "X-Robots-Tag": "noindex"},
+            headers={
+                "Cache-Control": "private, max-age=300",
+                "X-Robots-Tag": "noindex",
+            },
         )
 
     @app.get("/public/v1/boletas/{public_id}/pdf", name="public_receipt_pdf")
@@ -1395,7 +1146,9 @@ def create_app(
             config = resolve_receipt_config(record.tenant_id, record.taxpayer_rut)
             pdf = BoletaReceiptRenderer().render(record.signed_xml, config)
         except (ReceiptError, ValueError) as exc:
-            raise HTTPException(status_code=503, detail="Representación no disponible") from exc
+            raise HTTPException(
+                status_code=503, detail="Representación no disponible"
+            ) from exc
         return Response(
             pdf,
             media_type="application/pdf",
@@ -1416,131 +1169,3 @@ def _html(value: str) -> str:
         .replace(">", "&gt;")
         .replace('"', "&quot;")
     )
-
-
-def _response(record: FiscalDocumentRecord, request: Request) -> DocumentResponse:
-    xml_url = str(request.url_for("get_document_xml", record_id=record.id))
-    public_url = str(request.url_for("public_receipt_page", public_id=record.public_id))
-    try:
-        root = etree.fromstring(
-            record.signed_xml,
-            etree.XMLParser(resolve_entities=False, no_network=True, load_dtd=False),
-        )
-        counterparty = _xml_optional(root, "RznSocRecep") or "Consumidor final"
-        issued_on = _xml_one(root, "FchEmis")
-        total = int(_xml_one(root, "MntTotal"))
-    except (etree.XMLSyntaxError, ValueError) as exc:
-        raise RuntimeError("Documento fiscal persistido no puede proyectarse") from exc
-    return DocumentResponse(
-        id=record.id,
-        document_id=record.document_id,
-        document_type=record.document_type,
-        folio=record.folio,
-        taxpayer_rut=record.taxpayer_rut,
-        status="signed",
-        xml_sha256=record.xml_sha256,
-        created_at=record.created_at,
-        xml_url=xml_url,
-        public_url=public_url,
-        counterparty_name=counterparty,
-        issued_on=issued_on,
-        total=total,
-    )
-
-
-def _delivery_response(record: FiscalDeliveryRecord) -> DeliveryResponse:
-    return DeliveryResponse(
-        id=record.id,
-        document_record_id=record.document_record_id,
-        recipient_email=record.recipient_email,
-        status=record.status.value,
-        attempt_count=record.attempt_count,
-        exchange_xml_sha256=record.exchange_xml_sha256,
-        pdf_sha256=record.pdf_sha256,
-        provider_id=record.provider_id,
-        error_message=record.error_message,
-        created_at=record.created_at,
-        updated_at=record.updated_at,
-    )
-
-
-def _received_response(record) -> ReceivedDocumentResponse:
-    return ReceivedDocumentResponse(
-        id=record.id,
-        issuer_rut=record.issuer_rut,
-        issuer_name=record.issuer_name,
-        document_type=record.document_type,
-        folio=record.folio,
-        issued_on=record.issued_on,
-        total=record.total,
-        status=record.status,
-        source=record.source,
-        xml_sha256=record.xml_sha256,
-        sii_received_at=record.sii_received_at,
-        received_at=record.received_at,
-    )
-
-
-def _received_decision_response(record) -> ReceivedDecisionResponse:
-    return ReceivedDecisionResponse(
-        id=record.id,
-        received_document_id=record.received_document_id,
-        decision=record.decision,
-        reason=record.reason,
-        status=record.status.value,
-        remote_code=record.remote_code,
-        remote_message=record.remote_message,
-        created_at=record.created_at,
-        updated_at=record.updated_at,
-    )
-
-
-def _received_classification_response(record) -> ReceivedClassificationResponse:
-    return ReceivedClassificationResponse(
-        id=record.id,
-        received_document_id=record.received_document_id,
-        version=record.version,
-        provider_id=record.provider_id,
-        destination=record.destination,
-        category_code=record.category_code,
-        notes=record.notes,
-        classified_by=record.classified_by,
-        created_at=record.created_at,
-    )
-
-
-def _rcv_snapshot_response(record) -> RcvSnapshotResponse:
-    return RcvSnapshotResponse(
-        id=record.id,
-        period=record.period,
-        version=record.version,
-        source=record.source,
-        payload_sha256=record.payload_sha256,
-        imported_at=record.imported_at,
-    )
-
-
-def _xml_one(root: etree._Element, name: str) -> str:
-    values = root.xpath(f"//*[local-name()='{name}']/text()")
-    if len(values) != 1 or not str(values[0]).strip():
-        raise ValueError(f"El documento no contiene un único {name}")
-    return str(values[0]).strip()
-
-
-def _xml_optional(root: etree._Element, name: str) -> str | None:
-    values = root.xpath(f"//*[local-name()='{name}']/text()")
-    if len(values) > 1:
-        raise ValueError(f"El documento contiene {name} repetido")
-    return str(values[0]).strip() if values and str(values[0]).strip() else None
-
-
-def _document_name(document_type: DocumentType) -> str:
-    return {
-        DocumentType.FACTURA_AFECTA: "Factura electrónica",
-        DocumentType.FACTURA_EXENTA: "Factura exenta electrónica",
-        DocumentType.BOLETA_AFECTA: "Boleta electrónica",
-        DocumentType.BOLETA_EXENTA: "Boleta exenta electrónica",
-        DocumentType.GUIA_DESPACHO: "Guía de despacho electrónica",
-        DocumentType.NOTA_DEBITO: "Nota de débito electrónica",
-        DocumentType.NOTA_CREDITO: "Nota de crédito electrónica",
-    }[document_type]

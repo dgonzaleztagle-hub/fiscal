@@ -190,5 +190,7 @@ def _resolve_single_credential(
     credential,
 ):
     if tenant_id != expected_tenant or taxpayer_rut != expected_rut:
-        raise ConfigurationError("No existe credencial para el tenant y RUT solicitados")
+        raise ConfigurationError(
+            "No existe credencial para el tenant y RUT solicitados"
+        )
     return credential
