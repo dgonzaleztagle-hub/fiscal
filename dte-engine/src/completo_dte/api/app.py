@@ -1,10 +1,7 @@
 """Frontera HTTP para emitir y recuperar boletas firmadas."""
 
-from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
-import hashlib
-import hmac
 
 from lxml import etree
 
@@ -79,11 +76,7 @@ from completo_dte.presentation import (
     InvoiceReceiptRenderer,
     ReceiptError,
 )
-
-
-@dataclass(frozen=True)
-class ApiPrincipal:
-    tenant_id: str
+from .security import ApiPrincipal, build_authenticator
 
 
 class IssuerRequest(BaseModel):
@@ -437,15 +430,7 @@ def create_app(
     rcv_reconciliation_service: RcvReconciliationService | None = None,
 ) -> FastAPI:
     """Crea una app inyectable; no lee secretos ni abre bases al importar."""
-    if not api_keys:
-        raise ValueError("Se requiere al menos una API key")
-    hashed_keys = tuple(
-        (_token_digest(token), ApiPrincipal(tenant_id))
-        for token, tenant_id in api_keys.items()
-        if token and tenant_id
-    )
-    if len(hashed_keys) != len(api_keys):
-        raise ValueError("API keys y tenant IDs no pueden estar vacíos")
+    authenticate = build_authenticator(api_keys)
 
     app = FastAPI(
         title="Completo DTE Engine",
@@ -453,26 +438,6 @@ def create_app(
         docs_url=None,
         redoc_url=None,
     )
-
-    def authenticate(authorization: str | None = Header(default=None)) -> ApiPrincipal:
-        if authorization is None or not authorization.startswith("Bearer "):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Bearer token requerido",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        supplied = _token_digest(authorization.removeprefix("Bearer ").strip())
-        matched: ApiPrincipal | None = None
-        for expected, principal in hashed_keys:
-            if hmac.compare_digest(supplied, expected):
-                matched = principal
-        if matched is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Credencial inválida",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        return matched
 
     @app.get("/health")
     def health() -> dict[str, str]:
@@ -1442,10 +1407,6 @@ def create_app(
         )
 
     return app
-
-
-def _token_digest(token: str) -> bytes:
-    return hashlib.sha256(token.encode("utf-8")).digest()
 
 
 def _html(value: str) -> str:

@@ -96,7 +96,7 @@ class CafAuthenticityValidator:
                 caf.sii_signature,
                 signed_data,
                 padding.PKCS1v15(),
-                hashes.SHA1(),
+                hashes.SHA1(),  # noqa: S303 - algoritmo obligatorio del CAF SII.
             )
         except InvalidSignature as exc:
             raise CafError("La firma FRMA del CAF no es válida para el certificado SII") from exc

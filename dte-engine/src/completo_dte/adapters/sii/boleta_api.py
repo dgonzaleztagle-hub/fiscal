@@ -65,7 +65,7 @@ class SeedSigner:
         item = etree.SubElement(root, "item")
         etree.SubElement(item, "Semilla").text = seed
 
-        digest = hashlib.sha1(_canonicalize(root)).digest()
+        digest = hashlib.sha1(_canonicalize(root)).digest()  # noqa: S324 - XMLDSig SII.
         signature = etree.Element(etree.QName(DS, "Signature"), nsmap={None: DS})
         signed_info = etree.SubElement(signature, etree.QName(DS, "SignedInfo"))
         etree.SubElement(
@@ -96,7 +96,7 @@ class SeedSigner:
         signature_value = credential.private_key.sign(
             _canonicalize(signed_info),
             padding.PKCS1v15(),
-            hashes.SHA1(),
+            hashes.SHA1(),  # noqa: S303 - algoritmo obligatorio de XMLDSig SII.
         )
         etree.SubElement(signature, etree.QName(DS, "SignatureValue")).text = (
             base64.b64encode(signature_value).decode("ascii")

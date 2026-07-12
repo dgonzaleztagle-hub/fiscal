@@ -30,7 +30,7 @@ from completo_dte.presentation import ReceiptConfig
 from .app import create_app
 
 DEMO_TENANT = "tenant-demo-fiscal"
-DEMO_TOKEN = "completo-fiscal-demo-local-token-only"
+DEMO_TOKEN = "completo-fiscal-demo-local-token-only"  # noqa: S105 - entorno local sintético.
 DEMO_ISSUER_RUT = "12345678-5"
 
 
@@ -129,7 +129,8 @@ def _trusted_caf(*, document_type: int):
 
 
 def _synthetic_caf(*, document_type: int, sii_key: rsa.RSAPrivateKey) -> bytes:
-    key = rsa.generate_private_key(public_exponent=65537, key_size=1024)
+    # Replica el tamaño de clave fijado por el formato CAF del SII; sólo genera datos sintéticos.
+    key = rsa.generate_private_key(public_exponent=65537, key_size=1024)  # noqa: S505
     numbers = key.public_key().public_numbers()
     modulus = base64.b64encode(numbers.n.to_bytes((numbers.n.bit_length() + 7) // 8, "big")).decode()
     exponent = base64.b64encode(numbers.e.to_bytes((numbers.e.bit_length() + 7) // 8, "big")).decode()
@@ -150,7 +151,7 @@ def _synthetic_caf(*, document_type: int, sii_key: rsa.RSAPrivateKey) -> bytes:
     da = etree.fromstring((caf + "</CAF>").encode("ascii")).find("DA")
     canonical = etree.tostring(da, method="c14n", exclusive=False, with_comments=False)
     canonical = re.sub(rb">\s+<", b"><", canonical.decode().encode("iso-8859-1"))
-    signature = sii_key.sign(canonical, padding.PKCS1v15(), hashes.SHA1())
+    signature = sii_key.sign(canonical, padding.PKCS1v15(), hashes.SHA1())  # noqa: S303
     return (
         '<?xml version="1.0" encoding="ISO-8859-1"?><AUTORIZACION>'
         f'{caf}<FRMA algoritmo="SHA1withRSA">{base64.b64encode(signature).decode()}</FRMA>'

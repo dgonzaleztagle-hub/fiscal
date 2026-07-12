@@ -58,7 +58,7 @@ class XmlSigner:
         if target is None or target.get("ID") != target_id:
             raise XmlSignatureError("No se encontró el nodo con el ID esperado")
 
-        digest = hashlib.sha1(_canonicalize(target)).digest()
+        digest = hashlib.sha1(_canonicalize(target)).digest()  # noqa: S324 - XMLDSig SII.
         signature_node, signed_info = self._signature_skeleton(
             target_id,
             digest,
@@ -68,7 +68,7 @@ class XmlSigner:
         signature = credential.private_key.sign(
             signed_info_bytes,
             padding.PKCS1v15(),
-            hashes.SHA1(),
+            hashes.SHA1(),  # noqa: S303 - algoritmo obligatorio de XMLDSig SII.
         )
         signature_node.find(f"{{{DS}}}SignatureValue").text = base64.b64encode(signature).decode("ascii")
         signature_xml = etree.tostring(
@@ -152,7 +152,9 @@ class XmlSigner:
             ):
                 return False
 
-            expected_digest = base64.b64encode(hashlib.sha1(_canonicalize(document)).digest()).decode("ascii")
+            expected_digest = base64.b64encode(
+                hashlib.sha1(_canonicalize(document)).digest()  # noqa: S324
+            ).decode("ascii")
             if digest_value != expected_digest:
                 return False
 
@@ -174,7 +176,7 @@ class XmlSigner:
                 base64.b64decode(signature_value),
                 _canonicalize(signed_info),
                 padding.PKCS1v15(),
-                hashes.SHA1(),
+                hashes.SHA1(),  # noqa: S303 - algoritmo obligatorio de XMLDSig SII.
             )
             return True
         except Exception:

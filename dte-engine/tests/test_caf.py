@@ -30,3 +30,17 @@ def test_rejects_private_key_from_another_caf() -> None:
     altered = first.split(b"<RSASK>")[0] + b"<RSASK>" + private + b"</RSASK></AUTORIZACION>"
     with pytest.raises(CafError, match="no corresponde"):
         CafLoader().load(altered)
+
+
+def test_rejects_external_entities_without_resolving_them() -> None:
+    malicious = b'''<?xml version="1.0"?>
+<!DOCTYPE AUTORIZACION [<!ENTITY secret SYSTEM "file:///etc/passwd">]>
+<AUTORIZACION><CAF version="1.0"><DA><RE>&secret;</RE></DA></CAF></AUTORIZACION>'''
+
+    with pytest.raises(CafError):
+        CafLoader().load(malicious)
+
+
+def test_rejects_oversized_caf_before_parsing() -> None:
+    with pytest.raises(CafError, match="tamaño máximo"):
+        CafLoader().load(b" " * 1_000_001)

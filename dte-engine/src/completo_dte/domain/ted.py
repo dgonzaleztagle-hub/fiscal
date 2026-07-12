@@ -41,7 +41,7 @@ class SignedTed:
                 self.signature,
                 self.dd,
                 padding.PKCS1v15(),
-                hashes.SHA1(),
+                hashes.SHA1(),  # noqa: S303 - algoritmo obligatorio del TED SII.
             )
             return True
         except InvalidSignature:
@@ -79,7 +79,9 @@ class TedBuilder:
             + _element("TSTED", timestamp)
             + b"</DD>"
         )
-        signature = caf.private_key.sign(dd, padding.PKCS1v15(), hashes.SHA1())
+        signature = caf.private_key.sign(
+            dd, padding.PKCS1v15(), hashes.SHA1()  # noqa: S303
+        )
         encoded_signature = base64.b64encode(signature)
         xml = (
             b'<TED version="1.0">'

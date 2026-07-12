@@ -3,10 +3,10 @@
 from dataclasses import dataclass
 from datetime import date
 import re
-from xml.etree import ElementTree
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from lxml import etree
 
 from .rut import RutError, normalize_rut
 
@@ -38,9 +38,17 @@ class CafLoader:
     """Extrae y valida estructura, rango, RUT y par de claves de un CAF."""
 
     def load(self, xml: bytes) -> CafAuthorization:
+        if not xml or len(xml) > 1_000_000:
+            raise CafError("El CAF está vacío o excede el tamaño máximo permitido")
         try:
-            root = ElementTree.fromstring(xml)
-        except ElementTree.ParseError as exc:
+            parser = etree.XMLParser(
+                resolve_entities=False,
+                no_network=True,
+                load_dtd=False,
+                huge_tree=False,
+            )
+            root = etree.fromstring(xml, parser=parser)
+        except etree.XMLSyntaxError as exc:
             raise CafError("El CAF no es XML válido") from exc
 
         authorization = root if root.tag == "AUTORIZACION" else root.find(".//AUTORIZACION")
@@ -93,7 +101,7 @@ class CafLoader:
         )
 
 
-def _required_text(parent: ElementTree.Element, path: str) -> str:
+def _required_text(parent: etree._Element, path: str) -> str:
     element = parent.find(path)
     if element is None or not element.text or not element.text.strip():
         raise CafError(f"Falta campo obligatorio {path}")
@@ -122,7 +130,7 @@ def _load_private_key(value: str) -> rsa.RSAPrivateKey:
     return key
 
 
-def _assert_key_matches_caf(private_key: rsa.RSAPrivateKey, da: ElementTree.Element) -> None:
+def _assert_key_matches_caf(private_key: rsa.RSAPrivateKey, da: etree._Element) -> None:
     modulus = int.from_bytes(_decode_base64(_required_text(da, "RSAPK/M"), "RSAPK/M"))
     exponent = int.from_bytes(_decode_base64(_required_text(da, "RSAPK/E"), "RSAPK/E"))
     public_numbers = private_key.public_key().public_numbers()
