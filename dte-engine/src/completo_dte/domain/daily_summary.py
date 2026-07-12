@@ -42,8 +42,13 @@ class DailyFolio:
             raise DailySummaryError("Un folio anulado no puede informar montos")
         if not self.voided:
             if self.total_amount <= 0:
-                raise DailySummaryError("Un folio emitido debe tener monto total positivo")
-            if self.net_amount + self.vat_amount + self.exempt_amount != self.total_amount:
+                raise DailySummaryError(
+                    "Un folio emitido debe tener monto total positivo"
+                )
+            if (
+                self.net_amount + self.vat_amount + self.exempt_amount
+                != self.total_amount
+            ):
                 raise DailySummaryError("Neto, IVA y exento no cuadran con el total")
 
 
@@ -70,7 +75,11 @@ class DailySummaryBuilder:
             raise DailySummaryError("El RCOF necesita al menos un folio utilizado")
         if not 1 <= sequence <= 999:
             raise DailySummaryError("La secuencia del RCOF debe estar entre 1 y 999")
-        if not document_id or not document_id[0].isalpha() or not document_id.replace("_", "").isalnum():
+        if (
+            not document_id
+            or not document_id[0].isalpha()
+            or not document_id.replace("_", "").isalnum()
+        ):
             raise DailySummaryError("document_id debe ser un ID XML simple")
         issuer_rut = normalize_rut(issuer_rut)
         sender_rut = normalize_rut(sender_rut)

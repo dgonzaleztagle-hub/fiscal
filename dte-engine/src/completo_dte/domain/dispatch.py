@@ -59,7 +59,10 @@ class DispatchTransport:
             (self.destination_city, "ciudad de destino", 20),
             (self.trailer_plate, "patente del carro", 8),
         ):
-            if value is not None and not 1 <= len(value.encode("iso-8859-1")) <= maximum:
+            if (
+                value is not None
+                and not 1 <= len(value.encode("iso-8859-1")) <= maximum
+            ):
                 raise DispatchError(f"{label.capitalize()} excede {maximum} bytes")
         if (self.driver_rut is None) != (self.driver_name is None):
             raise DispatchError("RUT y nombre del chofer deben informarse juntos")
@@ -103,17 +106,25 @@ class DispatchDocument:
                 self.receiver.commune,
             )
         ):
-            raise DispatchError("La guía requiere giro, dirección y comuna del receptor")
+            raise DispatchError(
+                "La guía requiere giro, dirección y comuna del receptor"
+            )
         if self.reason is DispatchReason.INTERNAL_TRANSFER:
             if self.receiver.rut != self.issuer.rut:
-                raise DispatchError("El traslado interno debe usar al emisor como receptor")
+                raise DispatchError(
+                    "El traslado interno debe usar al emisor como receptor"
+                )
             if self.dispatch_account is not None:
                 raise DispatchError("El traslado interno no informa TipoDespacho")
         elif self.dispatch_account is None:
             raise DispatchError("La guía debe indicar por cuenta de quién se despacha")
-        non_billable = [line.tax_category is TaxCategory.NON_BILLABLE for line in self.lines]
+        non_billable = [
+            line.tax_category is TaxCategory.NON_BILLABLE for line in self.lines
+        ]
         if any(non_billable) and not all(non_billable):
-            raise DispatchError("Una guía no puede mezclar ítems valorizados y no valorizados")
+            raise DispatchError(
+                "Una guía no puede mezclar ítems valorizados y no valorizados"
+            )
         if all(non_billable):
             if any(line.unit_price != 0 for line in self.lines):
                 raise DispatchError("Los ítems no valorizados deben tener precio cero")
@@ -124,9 +135,12 @@ class DispatchDocument:
                 or line.surcharge_amount
                 for line in self.lines
             ):
-                raise DispatchError("Un ítem no valorizado no admite descuentos ni recargos")
+                raise DispatchError(
+                    "Un ítem no valorizado no admite descuentos ni recargos"
+                )
         elif any(
-            line.tax_category is TaxCategory.AFFECTED and line.price_mode is not PriceMode.NET
+            line.tax_category is TaxCategory.AFFECTED
+            and line.price_mode is not PriceMode.NET
             for line in self.lines
         ):
             raise DispatchError("Las líneas afectas de guía deben informar precio neto")

@@ -29,7 +29,9 @@ class Issuer:
         _require_latin1_length(self.legal_name, "razón social del emisor", 1, 100)
         _require_latin1_length(self.business_activity, "giro del emisor", 1, 80)
         if not 1 <= self.activity_code <= 999_999:
-            raise BoletaError("El código de actividad económica debe tener hasta 6 dígitos")
+            raise BoletaError(
+                "El código de actividad económica debe tener hasta 6 dígitos"
+            )
         if self.address is not None:
             _require_latin1_length(self.address, "dirección del emisor", 1, 70)
         if self.commune is not None:
@@ -86,7 +88,9 @@ class BoletaAfecta:
                 "La fecha de emisión debe estar entre 2002-08-01 y 2050-12-31"
             )
         if self.service_indicator != 3:
-            raise BoletaError("El primer spike sólo admite venta y servicios no periódicos")
+            raise BoletaError(
+                "El primer spike sólo admite venta y servicios no periódicos"
+            )
         if len(self.receiver_name.encode("iso-8859-1", errors="replace")) > 40:
             raise BoletaError("La razón social del receptor excede 40 bytes")
         if (self.reference_code is None) != (self.reference_reason is None):
@@ -154,7 +158,9 @@ class BoletaExenta:
                 "La fecha de emisión debe estar entre 2002-08-01 y 2050-12-31"
             )
         if self.service_indicator != 3:
-            raise BoletaError("La boleta exenta sólo admite venta y servicios no periódicos")
+            raise BoletaError(
+                "La boleta exenta sólo admite venta y servicios no periódicos"
+            )
         if len(self.receiver_name.encode("iso-8859-1", errors="replace")) > 40:
             raise BoletaError("La razón social del receptor excede 40 bytes")
         if (self.reference_code is None) != (self.reference_reason is None):
@@ -200,6 +206,10 @@ def _require_latin1_length(value: str, label: str, minimum: int, maximum: int) -
     try:
         length = len(value.encode("iso-8859-1"))
     except UnicodeEncodeError as exc:
-        raise BoletaError(f"{label.capitalize()} contiene caracteres fuera de ISO-8859-1") from exc
+        raise BoletaError(
+            f"{label.capitalize()} contiene caracteres fuera de ISO-8859-1"
+        ) from exc
     if not minimum <= length <= maximum:
-        raise BoletaError(f"{label.capitalize()} debe ocupar entre {minimum} y {maximum} bytes")
+        raise BoletaError(
+            f"{label.capitalize()} debe ocupar entre {minimum} y {maximum} bytes"
+        )

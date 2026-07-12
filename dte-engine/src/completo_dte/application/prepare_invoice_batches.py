@@ -45,7 +45,8 @@ class InvoiceBatchCoordinator:
         if not records:
             return None
         canonical = "|".join(
-            f"{record.id}:{record.document_id}:{record.xml_sha256}" for record in records
+            f"{record.id}:{record.document_id}:{record.xml_sha256}"
+            for record in records
         )
         fingerprint = hashlib.sha256(canonical.encode("ascii")).hexdigest()
         set_id = f"SetF_{fingerprint[:20]}"

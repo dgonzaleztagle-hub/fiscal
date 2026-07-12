@@ -48,3 +48,13 @@ test("las áreas SII declaran el origen sintético de sus datos", async ({ page 
     page.getByText("No es una declaración presentada ni una orden de pago."),
   ).toBeVisible();
 });
+
+test("ejecuta el ensayo offline sin habilitar CAF real", async ({ page }) => {
+  await page.goto("/certificacion");
+  await expect(page.getByRole("heading", { name: "Cockpit de preparación SII" })).toBeVisible();
+  await expect(page.getByText("Certificado digital real")).toBeVisible();
+  await page.getByLabel("Escenario de ensayo").selectOption("timeout_after_upload");
+  await page.getByRole("button", { name: "Ejecutar ensayo offline" }).click();
+  await expect(page.getByText("Estado final: unknown")).toBeVisible();
+  await expect(page.getByText("CAF real bloqueado")).toBeVisible();
+});

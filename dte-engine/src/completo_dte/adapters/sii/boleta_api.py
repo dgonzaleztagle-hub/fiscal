@@ -90,29 +90,33 @@ class SeedSigner:
             Algorithm=f"{DS}enveloped-signature",
         )
         etree.SubElement(reference, etree.QName(DS, "DigestMethod"), Algorithm=SHA1)
-        etree.SubElement(reference, etree.QName(DS, "DigestValue")).text = base64.b64encode(
-            digest
-        ).decode("ascii")
+        etree.SubElement(
+            reference, etree.QName(DS, "DigestValue")
+        ).text = base64.b64encode(digest).decode("ascii")
         signature_value = credential.private_key.sign(
             _canonicalize(signed_info),
             padding.PKCS1v15(),
             hashes.SHA1(),  # noqa: S303 - algoritmo obligatorio de XMLDSig SII.
         )
-        etree.SubElement(signature, etree.QName(DS, "SignatureValue")).text = (
-            base64.b64encode(signature_value).decode("ascii")
-        )
+        etree.SubElement(
+            signature, etree.QName(DS, "SignatureValue")
+        ).text = base64.b64encode(signature_value).decode("ascii")
         key_info = etree.SubElement(signature, etree.QName(DS, "KeyInfo"))
         key_value = etree.SubElement(key_info, etree.QName(DS, "KeyValue"))
         rsa_key = etree.SubElement(key_value, etree.QName(DS, "RSAKeyValue"))
         numbers = credential.private_key.public_key().public_numbers()
-        etree.SubElement(rsa_key, etree.QName(DS, "Modulus")).text = _integer_base64(numbers.n)
-        etree.SubElement(rsa_key, etree.QName(DS, "Exponent")).text = _integer_base64(numbers.e)
-        x509_data = etree.SubElement(key_info, etree.QName(DS, "X509Data"))
-        etree.SubElement(x509_data, etree.QName(DS, "X509Certificate")).text = (
-            base64.b64encode(
-                credential.certificate.public_bytes(Encoding.DER)
-            ).decode("ascii")
+        etree.SubElement(rsa_key, etree.QName(DS, "Modulus")).text = _integer_base64(
+            numbers.n
         )
+        etree.SubElement(rsa_key, etree.QName(DS, "Exponent")).text = _integer_base64(
+            numbers.e
+        )
+        x509_data = etree.SubElement(key_info, etree.QName(DS, "X509Data"))
+        etree.SubElement(
+            x509_data, etree.QName(DS, "X509Certificate")
+        ).text = base64.b64encode(
+            credential.certificate.public_bytes(Encoding.DER)
+        ).decode("ascii")
         root.append(signature)
         return etree.tostring(
             root,
@@ -139,9 +143,13 @@ class SiiBoletaApi:
         if environment not in ("certification", "production"):
             raise ValueError("Ambiente SII inválido")
         self._credential = credential
-        self._base_url = self.CERT_API if environment == "certification" else self.PROD_API
+        self._base_url = (
+            self.CERT_API if environment == "certification" else self.PROD_API
+        )
         self._upload_url = (
-            self.CERT_UPLOAD_API if environment == "certification" else self.PROD_UPLOAD_API
+            self.CERT_UPLOAD_API
+            if environment == "certification"
+            else self.PROD_UPLOAD_API
         )
         self._client = client or httpx.Client(timeout=30, follow_redirects=False)
         self._user_agent = user_agent
@@ -152,7 +160,8 @@ class SiiBoletaApi:
         if (
             not force
             and self._token is not None
-            and monotonic() - self._token_obtained_at < timedelta(minutes=55).total_seconds()
+            and monotonic() - self._token_obtained_at
+            < timedelta(minutes=55).total_seconds()
         ):
             return self._token
         seed_response = self._client.get(
@@ -176,7 +185,9 @@ class SiiBoletaApi:
         _require_success(token_response, "obtener token")
         if _xml_value(token_response.content, "ESTADO") not in ("0", "00"):
             glosa = _xml_optional_value(token_response.content, "GLOSA")
-            raise SiiApiError(f"El SII rechazó la autenticación: {glosa or 'sin detalle'}")
+            raise SiiApiError(
+                f"El SII rechazó la autenticación: {glosa or 'sin detalle'}"
+            )
         token = _xml_value(token_response.content, "TOKEN")
         if not 1 <= len(token) <= 500:
             raise SiiApiError("El SII entregó un token inválido")
@@ -217,14 +228,18 @@ class SiiBoletaApi:
         )
         if response.status_code == 401:
             self.authenticate(force=True)
-            raise SiiApiError("Token rechazado por el SII; reintento controlado requerido")
+            raise SiiApiError(
+                "Token rechazado por el SII; reintento controlado requerido"
+            )
         _require_success(response, "enviar boletas")
         data = _json_object(response)
         response_issuer = _normalized_response_rut(data, "rut_emisor")
         response_sender = _normalized_response_rut(data, "rut_envia")
         track_id = _required_numeric_field(data, "trackid", maximum_length=30)
         if response_issuer != normalized_issuer or response_sender != normalized_sender:
-            raise SiiApiError("La respuesta del SII no corresponde al emisor o enviador solicitado")
+            raise SiiApiError(
+                "La respuesta del SII no corresponde al emisor o enviador solicitado"
+            )
         return UploadReceipt(
             issuer_rut=response_issuer,
             sender_rut=response_sender,
@@ -256,7 +271,9 @@ class SiiBoletaApi:
         response_track_id = _required_numeric_field(data, "trackid", maximum_length=30)
         response_issuer = _normalized_response_rut(data, "rut_emisor")
         if response_track_id != track_id or response_issuer != normalized_issuer:
-            raise SiiApiError("La respuesta de estado del SII no corresponde a la consulta")
+            raise SiiApiError(
+                "La respuesta de estado del SII no corresponde a la consulta"
+            )
         return RemoteEnvelopeStatus(
             track_id=response_track_id,
             status=_required_string_field(data, "estado"),
@@ -286,18 +303,32 @@ def classify_envelope_status(
     if code in {"RLV", "RPR"}:
         return EnvelopeOutcome.ACCEPTED_WITH_OBJECTIONS
     if code == "EPR":
-        rejected = sum(_integer_field(row, "rechazados", "rechazado") for row in statistics)
-        objections = sum(
-            _integer_field(row, "reparos", "reparo") for row in statistics
+        rejected = sum(
+            _integer_field(row, "rechazados", "rechazado") for row in statistics
         )
+        objections = sum(_integer_field(row, "reparos", "reparo") for row in statistics)
         if rejected:
             return EnvelopeOutcome.REJECTED
         if objections or details:
             return EnvelopeOutcome.ACCEPTED_WITH_OBJECTIONS
         return EnvelopeOutcome.ACCEPTED
     if code in {
-        "001", "002", "003", "004", "005", "007", "106", "107",
-        "-11", "-8", "REC", "SOK", "FOK", "PDR", "PRD", "CRT",
+        "001",
+        "002",
+        "003",
+        "004",
+        "005",
+        "007",
+        "106",
+        "107",
+        "-11",
+        "-8",
+        "REC",
+        "SOK",
+        "FOK",
+        "PDR",
+        "PRD",
+        "CRT",
     }:
         return EnvelopeOutcome.PROCESSING
     return EnvelopeOutcome.UNKNOWN
@@ -378,7 +409,9 @@ def _normalized_response_rut(data: dict, name: str) -> str:
 
 def _dict_tuple(data: dict, name: str) -> tuple[dict, ...]:
     value = data.get(name) or ()
-    if not isinstance(value, (list, tuple)) or any(not isinstance(row, dict) for row in value):
+    if not isinstance(value, (list, tuple)) or any(
+        not isinstance(row, dict) for row in value
+    ):
         raise SiiApiError(f"Respuesta SII con {name} inválido")
     return tuple(value)
 

@@ -106,7 +106,9 @@ class InvoiceDeliveryWorker:
     def deliver(self, *, tenant_id: str, delivery_id: str) -> FiscalDeliveryRecord:
         delivery = self._ledger.begin_delivery(delivery_id, tenant_id=tenant_id)
         attachments = (
-            MailAttachment("intercambio-dte.xml", "application/xml", delivery.exchange_xml),
+            MailAttachment(
+                "intercambio-dte.xml", "application/xml", delivery.exchange_xml
+            ),
             MailAttachment("factura.pdf", "application/pdf", delivery.pdf),
         )
         try:

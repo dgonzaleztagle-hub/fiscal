@@ -81,7 +81,9 @@ class IssueDispatchService:
         signer = XmlSigner()
         signed = signer.sign(unsigned, credential)
         if not signer.verify_with_certificate(signed, credential.certificate):
-            raise ValueError("La firma XMLDSig no verificó contra la credencial esperada")
+            raise ValueError(
+                "La firma XMLDSig no verificó contra la credencial esperada"
+            )
         self._validate_signed_dte(signed)
         return self._ledger.persist_signed_document(
             lease.id,
@@ -98,7 +100,9 @@ def dispatch_command_sha256(command: IssueDispatchCommand) -> str:
         "issuer_profile_id": draft.issuer_profile_id,
         "issued_on": draft.issued_on.isoformat(),
         "reason": int(draft.dispatch_reason) if draft.dispatch_reason else None,
-        "dispatch_account": int(command.dispatch_account) if command.dispatch_account else None,
+        "dispatch_account": int(command.dispatch_account)
+        if command.dispatch_account
+        else None,
         "issuer": command.issuer.__dict__,
         "receiver": draft.receiver.__dict__ if draft.receiver else None,
         "transport": {

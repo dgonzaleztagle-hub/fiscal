@@ -73,7 +73,9 @@ class DteBuilder:
             + _element("MntTotal", str(boleta.total))
             + b"</Totales></Encabezado>"
         )
-        details = b"".join(self._detail(index, line) for index, line in enumerate(boleta.lines, 1))
+        details = b"".join(
+            self._detail(index, line) for index, line in enumerate(boleta.lines, 1)
+        )
         reference = b""
         if boleta.reference_code is not None:
             reference = (
@@ -130,7 +132,15 @@ class DteBuilder:
             b"MNT": str(boleta.total),
         }
         for tag, value in expected.items():
-            pattern = rb"<" + tag + rb">" + re.escape(value.encode("ascii")) + rb"</" + tag + rb">"
+            pattern = (
+                rb"<"
+                + tag
+                + rb">"
+                + re.escape(value.encode("ascii"))
+                + rb"</"
+                + tag
+                + rb">"
+            )
             if re.search(pattern, ted.dd) is None:
                 raise TedError(f"El TED no coincide con el DTE en {tag.decode()}")
 

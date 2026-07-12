@@ -15,7 +15,10 @@ Este documento separa desarrollo pendiente de infraestructura/identidad pendient
 - SSO de un uso y onboarding modular;
 - referencias de certificado y rotación sin almacenar secretos;
 - OpenAPI y cliente TypeScript sincronizados;
-- 197 pruebas, Ruff y build Next.js verdes.
+- ensayo reproducible de cinco folios con sobre, RCOF, evidencia ZIP y escenarios
+  aceptado, timeout ambiguo, sobre rechazado y RCOF rechazado;
+- cockpit de certificación conectado mediante proxy server-only y runbook operacional;
+- 212 pruebas, Ruff, ESLint, build Next.js y 8 recorridos Playwright verdes.
 
 ## Bloqueado deliberadamente hasta contar con empresa/infraestructura
 

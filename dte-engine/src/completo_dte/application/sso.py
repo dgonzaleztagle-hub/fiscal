@@ -49,7 +49,9 @@ class OneTimeSsoService:
             "nonce": secrets.token_urlsafe(24),
             "exp": int((instant + timedelta(seconds=ttl_seconds)).timestamp()),
         }
-        encoded = _b64(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode())
+        encoded = _b64(
+            json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+        )
         signature = _b64(hmac.new(self._key, encoded.encode(), hashlib.sha256).digest())
         return f"{encoded}.{signature}"
 
@@ -62,7 +64,9 @@ class OneTimeSsoService:
     ) -> dict[str, str]:
         try:
             encoded, signature = code.split(".", 1)
-            expected = _b64(hmac.new(self._key, encoded.encode(), hashlib.sha256).digest())
+            expected = _b64(
+                hmac.new(self._key, encoded.encode(), hashlib.sha256).digest()
+            )
             if not hmac.compare_digest(signature, expected):
                 raise SsoError("Firma SSO inválida")
             payload = json.loads(_unb64(encoded))
@@ -71,12 +75,17 @@ class OneTimeSsoService:
         except (ValueError, json.JSONDecodeError, UnicodeDecodeError) as exc:
             raise SsoError("Código SSO malformado") from exc
         instant = now or datetime.now(timezone.utc)
-        if instant.tzinfo is None or int(instant.timestamp()) > int(payload.get("exp", 0)):
+        if instant.tzinfo is None or int(instant.timestamp()) > int(
+            payload.get("exp", 0)
+        ):
             raise SsoError("Código SSO vencido")
         if payload.get("destination") != expected_destination:
             raise SsoError("El código SSO pertenece a otro destino")
         required = ("nonce", "tenant_id", "user_id", "destination")
-        if any(not isinstance(payload.get(key), str) or not payload[key] for key in required):
+        if any(
+            not isinstance(payload.get(key), str) or not payload[key]
+            for key in required
+        ):
             raise SsoError("Payload SSO incompleto")
         connection = sqlite3.connect(self._database, timeout=30, isolation_level=None)
         try:
@@ -86,8 +95,11 @@ class OneTimeSsoService:
                    (nonce,tenant_id,user_id,destination,consumed_at)
                    VALUES (?,?,?,?,?)""",
                 (
-                    payload["nonce"], payload["tenant_id"], payload["user_id"],
-                    payload["destination"], instant.isoformat(timespec="microseconds"),
+                    payload["nonce"],
+                    payload["tenant_id"],
+                    payload["user_id"],
+                    payload["destination"],
+                    instant.isoformat(timespec="microseconds"),
                 ),
             )
             connection.execute("COMMIT")

@@ -72,6 +72,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/certification/dry-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run Dry Run */
+        post: operations["run_dry_run_v1_certification_dry_runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/certification/readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Readiness */
+        get: operations["readiness_v1_certification_readiness_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/fiscal-deliveries/{delivery_id}": {
         parameters: {
             query?: never;
@@ -510,6 +544,48 @@ export interface components {
              * Format: date
              */
             issued_on: string;
+        };
+        /** CertificationDryRunRequest */
+        CertificationDryRunRequest: {
+            /**
+             * Scenario
+             * @default accepted
+             */
+            scenario: string;
+        };
+        /** CertificationDryRunResponse */
+        CertificationDryRunResponse: {
+            /** Document Count */
+            document_count: number;
+            /** Envelope Document Id */
+            envelope_document_id: string;
+            /** Evidence Sha256 */
+            evidence_sha256: string;
+            /** Final State */
+            final_state: string;
+            /** Rcof Document Id */
+            rcof_document_id: string;
+            /** Scenario */
+            scenario: string;
+            /** Synthetic */
+            synthetic: boolean;
+            /** Timeline */
+            timeline: {
+                [key: string]: string;
+            }[];
+        };
+        /** CertificationReadinessResponse */
+        CertificationReadinessResponse: {
+            /** Completed */
+            completed: number;
+            /** Gates */
+            gates: {
+                [key: string]: unknown;
+            }[];
+            /** Ready To Download Caf */
+            ready_to_download_caf: boolean;
+            /** Total */
+            total: number;
         };
         /**
          * CorrectionCode
@@ -1207,6 +1283,72 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_dry_run_v1_certification_dry_runs_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CertificationDryRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificationDryRunResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    readiness_v1_certification_readiness_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificationReadinessResponse"];
                 };
             };
             /** @description Validation Error */

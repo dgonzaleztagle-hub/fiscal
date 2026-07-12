@@ -355,3 +355,27 @@ class PurchaseAllocationsRequest(BaseModel):
     allocations: tuple[PurchaseLineAllocationRequest, ...] = Field(
         min_length=1, max_length=60
     )
+
+
+class CertificationDryRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    scenario: str = Field(default="accepted", max_length=40)
+
+
+class CertificationDryRunResponse(BaseModel):
+    synthetic: bool
+    document_count: int
+    envelope_document_id: str
+    rcof_document_id: str
+    scenario: str
+    final_state: str
+    evidence_sha256: str
+    timeline: list[dict[str, str]]
+
+
+class CertificationReadinessResponse(BaseModel):
+    ready_to_download_caf: bool
+    completed: int
+    total: int
+    gates: list[dict[str, object]]

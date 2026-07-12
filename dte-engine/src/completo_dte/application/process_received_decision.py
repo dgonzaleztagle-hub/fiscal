@@ -31,7 +31,9 @@ class ReceivedDecisionGateway(Protocol):
 
 
 class ReceivedDecisionService:
-    def __init__(self, *, ledger: FolioLedger, gateway: ReceivedDecisionGateway) -> None:
+    def __init__(
+        self, *, ledger: FolioLedger, gateway: ReceivedDecisionGateway
+    ) -> None:
         self._ledger = ledger
         self._gateway = gateway
 

@@ -95,7 +95,9 @@ class IssueBoletaService:
         signer = XmlSigner()
         signed = signer.sign(unsigned, credential)
         if not signer.verify_with_certificate(signed, credential.certificate):
-            raise ValueError("La firma XMLDSig no verificó contra la credencial esperada")
+            raise ValueError(
+                "La firma XMLDSig no verificó contra la credencial esperada"
+            )
         self._validate_signed_dte(signed)
         return self._ledger.persist_signed_document(
             lease.id,

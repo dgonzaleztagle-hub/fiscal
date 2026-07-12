@@ -24,8 +24,15 @@ def validate_rut(value: str) -> bool:
         return False
 
     body, supplied = compact[:-1], compact[-1]
-    total = sum(int(digit) * (2 + index % 6) for index, digit in enumerate(reversed(body)))
+    total = sum(
+        int(digit) * (2 + index % 6) for index, digit in enumerate(reversed(body))
+    )
     expected_value = 11 - total % 11
-    expected = "0" if expected_value == 11 else "K" if expected_value == 10 else str(expected_value)
+    expected = (
+        "0"
+        if expected_value == 11
+        else "K"
+        if expected_value == 10
+        else str(expected_value)
+    )
     return supplied == expected
-

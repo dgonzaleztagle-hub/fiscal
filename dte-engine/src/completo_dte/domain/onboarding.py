@@ -34,38 +34,109 @@ def onboarding_requirements(
     requirements = {
         item.key: item
         for item in (
-            OnboardingRequirement("organization", "Identificar organización", RequirementOwner.CLIENT),
-            OnboardingRequirement("administrator", "Crear administrador principal", RequirementOwner.CLIENT),
-            OnboardingRequirement("terms", "Aceptar contrato y privacidad", RequirementOwner.CLIENT),
+            OnboardingRequirement(
+                "organization", "Identificar organización", RequirementOwner.CLIENT
+            ),
+            OnboardingRequirement(
+                "administrator",
+                "Crear administrador principal",
+                RequirementOwner.CLIENT,
+            ),
+            OnboardingRequirement(
+                "terms", "Aceptar contrato y privacidad", RequirementOwner.CLIENT
+            ),
         )
     }
     module_requirements = {
         ProductModule.FISCAL: (
-            OnboardingRequirement("tax_profile", "Razón social, RUT, giro y actividades", RequirementOwner.CLIENT),
-            OnboardingRequirement("legal_representative", "Representante y usuarios autorizados SII", RequirementOwner.JOINT, True),
-            OnboardingRequirement("sii_eligibility", "Verificar habilitación tributaria", RequirementOwner.JOINT),
-            OnboardingRequirement("digital_certificate", "Instalar certificado en vault", RequirementOwner.JOINT, True),
-            OnboardingRequirement("fiscal_branches", "Configurar sucursales y códigos SII", RequirementOwner.CLIENT),
-            OnboardingRequirement("public_verification", "Publicar consulta HTTPS", RequirementOwner.COMPLETO),
-            OnboardingRequirement("caf_and_certification", "CAF y certificación por contribuyente", RequirementOwner.JOINT, True),
+            OnboardingRequirement(
+                "tax_profile",
+                "Razón social, RUT, giro y actividades",
+                RequirementOwner.CLIENT,
+            ),
+            OnboardingRequirement(
+                "legal_representative",
+                "Representante y usuarios autorizados SII",
+                RequirementOwner.JOINT,
+                True,
+            ),
+            OnboardingRequirement(
+                "sii_eligibility",
+                "Verificar habilitación tributaria",
+                RequirementOwner.JOINT,
+            ),
+            OnboardingRequirement(
+                "digital_certificate",
+                "Instalar certificado en vault",
+                RequirementOwner.JOINT,
+                True,
+            ),
+            OnboardingRequirement(
+                "fiscal_branches",
+                "Configurar sucursales y códigos SII",
+                RequirementOwner.CLIENT,
+            ),
+            OnboardingRequirement(
+                "public_verification",
+                "Publicar consulta HTTPS",
+                RequirementOwner.COMPLETO,
+            ),
+            OnboardingRequirement(
+                "caf_and_certification",
+                "CAF y certificación por contribuyente",
+                RequirementOwner.JOINT,
+                True,
+            ),
         ),
         ProductModule.POS: (
-            OnboardingRequirement("pos_branches", "Locales, cajas y dispositivos", RequirementOwner.JOINT),
-            OnboardingRequirement("menu", "Carta, precios e impuestos", RequirementOwner.CLIENT),
-            OnboardingRequirement("payments", "Medios de pago y cierres", RequirementOwner.CLIENT),
+            OnboardingRequirement(
+                "pos_branches", "Locales, cajas y dispositivos", RequirementOwner.JOINT
+            ),
+            OnboardingRequirement(
+                "menu", "Carta, precios e impuestos", RequirementOwner.CLIENT
+            ),
+            OnboardingRequirement(
+                "payments", "Medios de pago y cierres", RequirementOwner.CLIENT
+            ),
         ),
         ProductModule.LOYALTY: (
-            OnboardingRequirement("loyalty_rules", "Reglas de puntos y beneficios", RequirementOwner.CLIENT),
-            OnboardingRequirement("loyalty_privacy", "Consentimientos y comunicaciones", RequirementOwner.JOINT),
+            OnboardingRequirement(
+                "loyalty_rules",
+                "Reglas de puntos y beneficios",
+                RequirementOwner.CLIENT,
+            ),
+            OnboardingRequirement(
+                "loyalty_privacy",
+                "Consentimientos y comunicaciones",
+                RequirementOwner.JOINT,
+            ),
         ),
         ProductModule.ATTENDANCE: (
-            OnboardingRequirement("attendance_sites", "Centros y métodos de marcación", RequirementOwner.JOINT),
-            OnboardingRequirement("employees", "Trabajadores y jornadas", RequirementOwner.CLIENT, True),
+            OnboardingRequirement(
+                "attendance_sites",
+                "Centros y métodos de marcación",
+                RequirementOwner.JOINT,
+            ),
+            OnboardingRequirement(
+                "employees", "Trabajadores y jornadas", RequirementOwner.CLIENT, True
+            ),
         ),
         ProductModule.PAYROLL: (
-            OnboardingRequirement("employees", "Trabajadores y jornadas", RequirementOwner.CLIENT, True),
-            OnboardingRequirement("payroll_rules", "Contratos, haberes y descuentos", RequirementOwner.JOINT, True),
-            OnboardingRequirement("payroll_payment", "Ciclo y datos de pago", RequirementOwner.CLIENT, True),
+            OnboardingRequirement(
+                "employees", "Trabajadores y jornadas", RequirementOwner.CLIENT, True
+            ),
+            OnboardingRequirement(
+                "payroll_rules",
+                "Contratos, haberes y descuentos",
+                RequirementOwner.JOINT,
+                True,
+            ),
+            OnboardingRequirement(
+                "payroll_payment",
+                "Ciclo y datos de pago",
+                RequirementOwner.CLIENT,
+                True,
+            ),
         ),
     }
     for module in sorted(modules, key=lambda value: value.value):

@@ -61,7 +61,9 @@ class InvoiceDteBuilder:
             totals += _element("MntNeto", str(invoice.net_total))
             if invoice.exempt_total:
                 totals += _element("MntExe", str(invoice.exempt_total))
-            totals += _element("TasaIVA", "19") + _element("IVA", str(invoice.vat_total))
+            totals += _element("TasaIVA", "19") + _element(
+                "IVA", str(invoice.vat_total)
+            )
         else:
             totals += _element("MntExe", str(invoice.exempt_total))
         totals += _element("MntTotal", str(invoice.total))
@@ -138,6 +140,14 @@ class InvoiceDteBuilder:
             b"MNT": str(invoice.total),
         }
         for tag, value in expected.items():
-            pattern = rb"<" + tag + rb">" + re.escape(value.encode("ascii")) + rb"</" + tag + rb">"
+            pattern = (
+                rb"<"
+                + tag
+                + rb">"
+                + re.escape(value.encode("ascii"))
+                + rb"</"
+                + tag
+                + rb">"
+            )
             if re.search(pattern, ted.dd) is None:
                 raise TedError(f"El TED no coincide con la factura en {tag.decode()}")

@@ -51,7 +51,9 @@ class CafLoader:
         except etree.XMLSyntaxError as exc:
             raise CafError("El CAF no es XML válido") from exc
 
-        authorization = root if root.tag == "AUTORIZACION" else root.find(".//AUTORIZACION")
+        authorization = (
+            root if root.tag == "AUTORIZACION" else root.find(".//AUTORIZACION")
+        )
         if authorization is None:
             raise CafError("Falta AUTORIZACION")
 
@@ -135,7 +137,9 @@ def _assert_key_matches_caf(private_key: rsa.RSAPrivateKey, da: etree._Element) 
     exponent = int.from_bytes(_decode_base64(_required_text(da, "RSAPK/E"), "RSAPK/E"))
     public_numbers = private_key.public_key().public_numbers()
     if public_numbers.n != modulus or public_numbers.e != exponent:
-        raise CafError("La clave privada RSASK no corresponde a la clave pública del CAF")
+        raise CafError(
+            "La clave privada RSASK no corresponde a la clave pública del CAF"
+        )
 
 
 def _extract_original_caf(xml: bytes) -> bytes:

@@ -48,7 +48,9 @@ class XmlSigner:
         target_id: str,
         credential: SigningCredential,
     ) -> bytes:
-        parser = etree.XMLParser(resolve_entities=False, no_network=True, remove_blank_text=False)
+        parser = etree.XMLParser(
+            resolve_entities=False, no_network=True, remove_blank_text=False
+        )
         try:
             root = etree.fromstring(xml, parser)
         except etree.XMLSyntaxError as exc:
@@ -70,7 +72,9 @@ class XmlSigner:
             padding.PKCS1v15(),
             hashes.SHA1(),  # noqa: S303 - algoritmo obligatorio de XMLDSig SII.
         )
-        signature_node.find(f"{{{DS}}}SignatureValue").text = base64.b64encode(signature).decode("ascii")
+        signature_node.find(f"{{{DS}}}SignatureValue").text = base64.b64encode(
+            signature
+        ).decode("ascii")
         signature_xml = etree.tostring(
             signature_node,
             encoding="ISO-8859-1",
@@ -111,7 +115,9 @@ class XmlSigner:
         target_id: str,
         expected_certificate=None,
     ) -> bool:
-        parser = etree.XMLParser(resolve_entities=False, no_network=True, remove_blank_text=False)
+        parser = etree.XMLParser(
+            resolve_entities=False, no_network=True, remove_blank_text=False
+        )
         try:
             root = etree.fromstring(xml, parser)
             document = root.find(target_tag)
@@ -132,7 +138,13 @@ class XmlSigner:
             digest_value = signature.findtext(f".//{{{DS}}}DigestValue")
             certificate_value = signature.findtext(f".//{{{DS}}}X509Certificate")
             reference = signature.find(f".//{{{DS}}}Reference")
-            if None in (signed_info, signature_value, digest_value, certificate_value, reference):
+            if None in (
+                signed_info,
+                signature_value,
+                digest_value,
+                certificate_value,
+                reference,
+            ):
                 return False
             if reference.get("URI") != f"#{target_id}":
                 return False
@@ -160,12 +172,12 @@ class XmlSigner:
 
             from cryptography import x509
 
-            certificate = x509.load_der_x509_certificate(base64.b64decode(certificate_value))
-            if (
-                expected_certificate is not None
-                and certificate.fingerprint(hashes.SHA256())
-                != expected_certificate.fingerprint(hashes.SHA256())
-            ):
+            certificate = x509.load_der_x509_certificate(
+                base64.b64decode(certificate_value)
+            )
+            if expected_certificate is not None and certificate.fingerprint(
+                hashes.SHA256()
+            ) != expected_certificate.fingerprint(hashes.SHA256()):
                 return False
             public_key = certificate.public_key()
             if expected_certificate is not None:
@@ -195,7 +207,9 @@ class XmlSigner:
             etree.QName(DS, "CanonicalizationMethod"),
             Algorithm=C14N,
         )
-        etree.SubElement(signed_info, etree.QName(DS, "SignatureMethod"), Algorithm=RSA_SHA1)
+        etree.SubElement(
+            signed_info, etree.QName(DS, "SignatureMethod"), Algorithm=RSA_SHA1
+        )
         reference = etree.SubElement(
             signed_info,
             etree.QName(DS, "Reference"),
@@ -204,17 +218,25 @@ class XmlSigner:
         transforms = etree.SubElement(reference, etree.QName(DS, "Transforms"))
         etree.SubElement(transforms, etree.QName(DS, "Transform"), Algorithm=C14N)
         etree.SubElement(reference, etree.QName(DS, "DigestMethod"), Algorithm=SHA1)
-        etree.SubElement(reference, etree.QName(DS, "DigestValue")).text = base64.b64encode(digest).decode("ascii")
+        etree.SubElement(
+            reference, etree.QName(DS, "DigestValue")
+        ).text = base64.b64encode(digest).decode("ascii")
         etree.SubElement(signature, etree.QName(DS, "SignatureValue"))
 
         key_info = etree.SubElement(signature, etree.QName(DS, "KeyInfo"))
         key_value = etree.SubElement(key_info, etree.QName(DS, "KeyValue"))
         rsa_key = etree.SubElement(key_value, etree.QName(DS, "RSAKeyValue"))
         numbers = credential.private_key.public_key().public_numbers()
-        etree.SubElement(rsa_key, etree.QName(DS, "Modulus")).text = _integer_base64(numbers.n)
-        etree.SubElement(rsa_key, etree.QName(DS, "Exponent")).text = _integer_base64(numbers.e)
+        etree.SubElement(rsa_key, etree.QName(DS, "Modulus")).text = _integer_base64(
+            numbers.n
+        )
+        etree.SubElement(rsa_key, etree.QName(DS, "Exponent")).text = _integer_base64(
+            numbers.e
+        )
         x509_data = etree.SubElement(key_info, etree.QName(DS, "X509Data"))
-        etree.SubElement(x509_data, etree.QName(DS, "X509Certificate")).text = base64.b64encode(
+        etree.SubElement(
+            x509_data, etree.QName(DS, "X509Certificate")
+        ).text = base64.b64encode(
             credential.certificate.public_bytes(Encoding.DER)
         ).decode("ascii")
         return signature, signed_info

@@ -62,12 +62,17 @@ class Invoice:
             if len(value.encode("iso-8859-1")) > maximum:
                 raise InvoiceError(f"{label.capitalize()} excede {maximum} bytes")
         if any(line.tax_category == TaxCategory.NON_BILLABLE for line in self.lines):
-            raise InvoiceError("La primera versión de facturas no admite líneas no facturables")
+            raise InvoiceError(
+                "La primera versión de facturas no admite líneas no facturables"
+            )
         if any(
-            line.tax_category == TaxCategory.AFFECTED and line.price_mode != PriceMode.NET
+            line.tax_category == TaxCategory.AFFECTED
+            and line.price_mode != PriceMode.NET
             for line in self.lines
         ):
-            raise InvoiceError("Las líneas afectas de factura deben informar precio neto")
+            raise InvoiceError(
+                "Las líneas afectas de factura deben informar precio neto"
+            )
         if self.document_type == DocumentType.FACTURA_EXENTA and any(
             line.tax_category != TaxCategory.EXEMPT for line in self.lines
         ):

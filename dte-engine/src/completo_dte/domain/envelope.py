@@ -46,7 +46,11 @@ class EnvioBoletaBuilder:
             raise ValueError("EnvioBOLETA debe contener entre 1 y 500 documentos")
         issuer_rut = normalize_rut(issuer_rut)
         sender_rut = normalize_rut(sender_rut)
-        if not set_id or not set_id[0].isalpha() or not set_id.replace("_", "").isalnum():
+        if (
+            not set_id
+            or not set_id[0].isalpha()
+            or not set_id.replace("_", "").isalnum()
+        ):
             raise ValueError("set_id debe ser un ID XML simple")
 
         signer = XmlSigner()
@@ -87,7 +91,9 @@ class EnvioBoletaBuilder:
             + subtotals
             + b"</Caratula>"
         )
-        embedded = b"".join(_without_declaration(document.xml) for document in documents)
+        embedded = b"".join(
+            _without_declaration(document.xml) for document in documents
+        )
         unsigned = (
             b'<?xml version="1.0" encoding="ISO-8859-1"?>'
             b'<EnvioBOLETA version="1.0" xmlns="http://www.sii.cl/SiiDte">'
@@ -129,7 +135,11 @@ class EnvioDteBuilder:
         issuer_rut = normalize_rut(issuer_rut)
         sender_rut = normalize_rut(sender_rut)
         receiver_rut = normalize_rut(receiver_rut)
-        if not set_id or not set_id[0].isalpha() or not set_id.replace("_", "").isalnum():
+        if (
+            not set_id
+            or not set_id[0].isalpha()
+            or not set_id.replace("_", "").isalnum()
+        ):
             raise ValueError("set_id debe ser un ID XML simple")
 
         signer = XmlSigner()
@@ -144,8 +154,13 @@ class EnvioDteBuilder:
                 raise ValueError("EnvioDTE contiene un documento de otro emisor")
             if document_type not in {33, 34, 52, 56, 61}:
                 raise ValueError("EnvioDTE contiene un tipo documental no habilitado")
-            if receiver_rut != self.SII_RUT and _document_receiver(document) != receiver_rut:
-                raise ValueError("El intercambio contiene una factura para otro receptor")
+            if (
+                receiver_rut != self.SII_RUT
+                and _document_receiver(document) != receiver_rut
+            ):
+                raise ValueError(
+                    "El intercambio contiene una factura para otro receptor"
+                )
             identities.append((document.document_id, document_type, folio))
         if len(identities) != len(set(identities)):
             raise ValueError("EnvioDTE no puede repetir un mismo documento")
@@ -172,7 +187,9 @@ class EnvioDteBuilder:
             + subtotals
             + b"</Caratula>"
         )
-        embedded = b"".join(_without_declaration(document.xml) for document in documents)
+        embedded = b"".join(
+            _without_declaration(document.xml) for document in documents
+        )
         unsigned = (
             b'<?xml version="1.0" encoding="ISO-8859-1"?>'
             b'<EnvioDTE version="1.0" xmlns="http://www.sii.cl/SiiDte">'
@@ -195,7 +212,7 @@ class EnvioDteBuilder:
 def _without_declaration(xml: bytes) -> bytes:
     marker = b"?>"
     if xml.startswith(b"<?xml"):
-        return xml[xml.index(marker) + len(marker):]
+        return xml[xml.index(marker) + len(marker) :]
     return xml
 
 

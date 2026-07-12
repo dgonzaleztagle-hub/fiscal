@@ -6,7 +6,10 @@ import hashlib
 import json
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from completo_dte.infrastructure import FiscalDocumentRecord, ReceivedFiscalDocumentRecord
+from completo_dte.infrastructure import (
+    FiscalDocumentRecord,
+    ReceivedFiscalDocumentRecord,
+)
 from .monthly_report import MonthlyFiscalReport, MonthlyReportBuilder
 
 
@@ -31,13 +34,20 @@ class AccountantPackageBuilder:
             f"reportes/{artifact.filename}": artifact.content for artifact in artifacts
         }
         for record in outgoing:
-            files[f"xml/ventas/{record.document_type}-{record.folio}-{record.xml_sha256[:12]}.xml"] = record.signed_xml
+            files[
+                f"xml/ventas/{record.document_type}-{record.folio}-{record.xml_sha256[:12]}.xml"
+            ] = record.signed_xml
         for record in received:
-            files[f"xml/compras/{record.document_type}-{record.folio}-{record.xml_sha256[:12]}.xml"] = record.signed_xml
+            files[
+                f"xml/compras/{record.document_type}-{record.folio}-{record.xml_sha256[:12]}.xml"
+            ] = record.signed_xml
         manifest = {
             "period": report.period,
             "files": {
-                name: {"sha256": hashlib.sha256(content).hexdigest(), "size": len(content)}
+                name: {
+                    "sha256": hashlib.sha256(content).hexdigest(),
+                    "size": len(content),
+                }
                 for name, content in sorted(files.items())
             },
         }

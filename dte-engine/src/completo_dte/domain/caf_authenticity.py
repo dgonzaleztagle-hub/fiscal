@@ -52,10 +52,15 @@ class SiiCertificateStore:
         if not isinstance(certificate.public_key(), rsa.RSAPublicKey):
             raise CafTrustError("El certificado SII debe contener una clave RSA")
         fingerprint = certificate.fingerprint(hashes.SHA256()).hex().upper()
-        if expected_sha256 is not None and fingerprint != expected_sha256.replace(":", "").upper():
+        if (
+            expected_sha256 is not None
+            and fingerprint != expected_sha256.replace(":", "").upper()
+        ):
             raise CafTrustError("El fingerprint del certificado SII no coincide")
         existing = self._certificates.get(key_id)
-        if existing is not None and existing.fingerprint(hashes.SHA256()) != certificate.fingerprint(hashes.SHA256()):
+        if existing is not None and existing.fingerprint(
+            hashes.SHA256()
+        ) != certificate.fingerprint(hashes.SHA256()):
             raise CafTrustError(f"IDK {key_id} ya está asociado a otro certificado")
         self._certificates[key_id] = certificate
 
@@ -63,7 +68,9 @@ class SiiCertificateStore:
         try:
             return self._certificates[key_id]
         except KeyError as exc:
-            raise CafTrustError(f"No existe un certificado SII confiable para IDK {key_id}") from exc
+            raise CafTrustError(
+                f"No existe un certificado SII confiable para IDK {key_id}"
+            ) from exc
 
 
 class CafAuthenticityValidator:
@@ -79,10 +86,14 @@ class CafAuthenticityValidator:
         try:
             root = etree.fromstring(
                 caf.caf_xml,
-                etree.XMLParser(resolve_entities=False, no_network=True, remove_blank_text=False),
+                etree.XMLParser(
+                    resolve_entities=False, no_network=True, remove_blank_text=False
+                ),
             )
         except etree.XMLSyntaxError as exc:
-            raise CafError("No fue posible interpretar el bloque CAF para validar FRMA") from exc
+            raise CafError(
+                "No fue posible interpretar el bloque CAF para validar FRMA"
+            ) from exc
         da = root.find("DA")
         frma = root.find("FRMA")
         if da is None or frma is None or not frma.text:
@@ -99,7 +110,9 @@ class CafAuthenticityValidator:
                 hashes.SHA1(),  # noqa: S303 - algoritmo obligatorio del CAF SII.
             )
         except InvalidSignature as exc:
-            raise CafError("La firma FRMA del CAF no es válida para el certificado SII") from exc
+            raise CafError(
+                "La firma FRMA del CAF no es válida para el certificado SII"
+            ) from exc
         return TrustedCafAuthorization(caf)
 
 
@@ -115,7 +128,9 @@ def canonicalize_caf_da(da: etree._Element) -> bytes:
 def _escape_quotes_in_text_nodes(xml: str) -> str:
     pieces = re.split(r"(<[^>]+>)", xml)
     return "".join(
-        piece if piece.startswith("<") else piece.replace("'", "&apos;").replace('"', "&quot;")
+        piece
+        if piece.startswith("<")
+        else piece.replace("'", "&apos;").replace('"', "&quot;")
         for piece in pieces
     )
 

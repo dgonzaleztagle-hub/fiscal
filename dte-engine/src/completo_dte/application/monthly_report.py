@@ -14,7 +14,10 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-from completo_dte.infrastructure import FiscalDocumentRecord, ReceivedFiscalDocumentRecord
+from completo_dte.infrastructure import (
+    FiscalDocumentRecord,
+    ReceivedFiscalDocumentRecord,
+)
 
 
 @dataclass(frozen=True)
@@ -69,9 +72,15 @@ class MonthlyReportBuilder:
             if values["issued_on"].startswith(period):
                 rows.append(
                     MonthlyDocumentRow(
-                        "sale", record.document_type, record.folio,
-                        record.taxpayer_rut, values["issued_on"], values["net"],
-                        values["exempt"], values["vat"], values["total"],
+                        "sale",
+                        record.document_type,
+                        record.folio,
+                        record.taxpayer_rut,
+                        values["issued_on"],
+                        values["net"],
+                        values["exempt"],
+                        values["vat"],
+                        values["total"],
                         record.xml_sha256,
                     )
                 )
@@ -80,28 +89,58 @@ class MonthlyReportBuilder:
                 values = _xml_values(record.signed_xml)
                 rows.append(
                     MonthlyDocumentRow(
-                        "purchase", record.document_type, record.folio,
-                        record.issuer_rut, record.issued_on, values["net"],
-                        values["exempt"], values["vat"], record.total,
+                        "purchase",
+                        record.document_type,
+                        record.folio,
+                        record.issuer_rut,
+                        record.issued_on,
+                        values["net"],
+                        values["exempt"],
+                        values["vat"],
+                        record.total,
                         record.xml_sha256,
                     )
                 )
         return MonthlyFiscalReport(
             period,
-            tuple(sorted(rows, key=lambda row: (row.direction, row.document_type, row.folio))),
+            tuple(
+                sorted(
+                    rows, key=lambda row: (row.direction, row.document_type, row.folio)
+                )
+            ),
         )
 
     def csv(self, report: MonthlyFiscalReport) -> ExportArtifact:
         output = StringIO(newline="")
         writer = csv.writer(output, lineterminator="\n")
         writer.writerow(
-            ["direction", "document_type", "folio", "taxpayer_rut", "issued_on",
-             "net", "exempt", "vat", "total", "xml_sha256"]
+            [
+                "direction",
+                "document_type",
+                "folio",
+                "taxpayer_rut",
+                "issued_on",
+                "net",
+                "exempt",
+                "vat",
+                "total",
+                "xml_sha256",
+            ]
         )
         for row in report.rows:
             writer.writerow(
-                [row.direction, row.document_type, row.folio, row.taxpayer_rut,
-                 row.issued_on, row.net, row.exempt, row.vat, row.total, row.xml_sha256]
+                [
+                    row.direction,
+                    row.document_type,
+                    row.folio,
+                    row.taxpayer_rut,
+                    row.issued_on,
+                    row.net,
+                    row.exempt,
+                    row.vat,
+                    row.total,
+                    row.xml_sha256,
+                ]
             )
         content = output.getvalue().encode("utf-8-sig")
         return ExportArtifact(
@@ -122,12 +161,20 @@ class MonthlyReportBuilder:
         summary.column_dimensions["A"].width = 22
         summary.column_dimensions["B"].width = 18
         for cell in (summary["B2"], summary["B3"]):
-            cell.number_format = '$#,##0'
+            cell.number_format = "$#,##0"
 
         sheet = workbook.create_sheet("Documentos")
         headers = [
-            "Dirección", "Tipo", "Folio", "RUT", "Fecha", "Neto", "Exento",
-            "IVA", "Total", "SHA-256 XML",
+            "Dirección",
+            "Tipo",
+            "Folio",
+            "RUT",
+            "Fecha",
+            "Neto",
+            "Exento",
+            "IVA",
+            "Total",
+            "SHA-256 XML",
         ]
         sheet.append(headers)
         for cell in sheet[1]:
@@ -135,14 +182,24 @@ class MonthlyReportBuilder:
             cell.fill = PatternFill("solid", fgColor="17233B")
         for row in report.rows:
             sheet.append(
-                [row.direction, row.document_type, row.folio, row.taxpayer_rut,
-                 row.issued_on, row.net, row.exempt, row.vat, row.total, row.xml_sha256]
+                [
+                    row.direction,
+                    row.document_type,
+                    row.folio,
+                    row.taxpayer_rut,
+                    row.issued_on,
+                    row.net,
+                    row.exempt,
+                    row.vat,
+                    row.total,
+                    row.xml_sha256,
+                ]
             )
         sheet.freeze_panes = "A2"
         sheet.auto_filter.ref = sheet.dimensions
         for column in ("F", "G", "H", "I"):
             for cell in sheet[column][1:]:
-                cell.number_format = '$#,##0'
+                cell.number_format = "$#,##0"
         widths = [13, 10, 12, 16, 13, 14, 14, 14, 14, 66]
         for index, width in enumerate(widths, 1):
             sheet.column_dimensions[chr(64 + index)].width = width
@@ -175,13 +232,38 @@ class MonthlyReportBuilder:
             ),
             Spacer(1, 6 * mm),
         ]
-        data = [["Dir.", "Tipo", "Folio", "RUT", "Fecha", "Neto", "Exento", "IVA", "Total"]]
+        data = [
+            ["Dir.", "Tipo", "Folio", "RUT", "Fecha", "Neto", "Exento", "IVA", "Total"]
+        ]
         for row in report.rows:
             data.append(
-                [row.direction, row.document_type, row.folio, row.taxpayer_rut,
-                 row.issued_on, row.net, row.exempt, row.vat, row.total]
+                [
+                    row.direction,
+                    row.document_type,
+                    row.folio,
+                    row.taxpayer_rut,
+                    row.issued_on,
+                    row.net,
+                    row.exempt,
+                    row.vat,
+                    row.total,
+                ]
             )
-        table = Table(data, repeatRows=1, colWidths=[18*mm, 14*mm, 20*mm, 28*mm, 24*mm, 24*mm, 24*mm, 24*mm, 26*mm])
+        table = Table(
+            data,
+            repeatRows=1,
+            colWidths=[
+                18 * mm,
+                14 * mm,
+                20 * mm,
+                28 * mm,
+                24 * mm,
+                24 * mm,
+                24 * mm,
+                24 * mm,
+                26 * mm,
+            ],
+        )
         table.setStyle(
             TableStyle(
                 [
@@ -189,9 +271,14 @@ class MonthlyReportBuilder:
                     ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
                     ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                     ("FONTSIZE", (0, 0), (-1, -1), 7),
-                    ("GRID", (0, 0), (-1, -1), .25, colors.HexColor("#D9DEE7")),
+                    ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#D9DEE7")),
                     ("ALIGN", (5, 1), (-1, -1), "RIGHT"),
-                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F7F8FA")]),
+                    (
+                        "ROWBACKGROUNDS",
+                        (0, 1),
+                        (-1, -1),
+                        [colors.white, colors.HexColor("#F7F8FA")],
+                    ),
                 ]
             )
         )
@@ -208,11 +295,14 @@ class MonthlyReportBuilder:
 
 def _xml_values(payload: bytes) -> dict[str, str | int]:
     root = etree.fromstring(
-        payload, etree.XMLParser(resolve_entities=False, no_network=True, load_dtd=False)
+        payload,
+        etree.XMLParser(resolve_entities=False, no_network=True, load_dtd=False),
     )
+
     def value(name, default="0"):
         values = root.xpath("//*[local-name()=$name]/text()", name=name)
         return str(values[0]).strip() if len(values) == 1 else default
+
     return {
         "issued_on": value("FchEmis", ""),
         "net": int(value("MntNeto")),

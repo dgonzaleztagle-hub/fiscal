@@ -72,15 +72,11 @@ class TedBuilder:
             + _element("MNT", str(boleta.total))
             + _element("IT1", first_item)
         )
-        dd = (
-            b"<DD>"
-            + fields
-            + caf.caf_xml
-            + _element("TSTED", timestamp)
-            + b"</DD>"
-        )
+        dd = b"<DD>" + fields + caf.caf_xml + _element("TSTED", timestamp) + b"</DD>"
         signature = caf.private_key.sign(
-            dd, padding.PKCS1v15(), hashes.SHA1()  # noqa: S303
+            dd,
+            padding.PKCS1v15(),
+            hashes.SHA1(),  # noqa: S303
         )
         encoded_signature = base64.b64encode(signature)
         xml = (
@@ -101,9 +97,7 @@ class TedBuilder:
         if data.issuer_rut != boleta.issuer_rut:
             raise TedError("El CAF pertenece a otro emisor")
         if data.document_type != boleta.document_type:
-            raise TedError(
-                f"El CAF no autoriza documentos tipo {boleta.document_type}"
-            )
+            raise TedError(f"El CAF no autoriza documentos tipo {boleta.document_type}")
         if not data.folio_from <= boleta.folio <= data.folio_to:
             raise TedError("El folio está fuera del rango autorizado por el CAF")
 
@@ -113,14 +107,18 @@ def _element(tag: str, value: str) -> bytes:
         encoded = escape(value, quote=False).encode("iso-8859-1")
     except UnicodeEncodeError as exc:
         raise TedError(f"{tag} contiene caracteres fuera de ISO-8859-1") from exc
-    return b"<" + tag.encode("ascii") + b">" + encoded + b"</" + tag.encode("ascii") + b">"
+    return (
+        b"<" + tag.encode("ascii") + b">" + encoded + b"</" + tag.encode("ascii") + b">"
+    )
 
 
 def _latin1_prefix(value: str, maximum_bytes: int) -> str:
     try:
         encoded = value.encode("iso-8859-1")
     except UnicodeEncodeError as exc:
-        raise TedError("El primer ítem contiene caracteres fuera de ISO-8859-1") from exc
+        raise TedError(
+            "El primer ítem contiene caracteres fuera de ISO-8859-1"
+        ) from exc
     return encoded[:maximum_bytes].decode("iso-8859-1")
 
 

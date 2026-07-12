@@ -124,7 +124,9 @@ class FiscalLine:
         if any(value < 0 for value in decimals[2:]):
             raise FiscalDocumentError("Descuentos y recargos no pueden ser negativos")
         if self.discount_percent > 100 or self.surcharge_percent > 1000:
-            raise FiscalDocumentError("Porcentajes de descuento o recargo fuera de rango")
+            raise FiscalDocumentError(
+                "Porcentajes de descuento o recargo fuera de rango"
+            )
         if self.discount_percent and self.discount_amount:
             raise FiscalDocumentError("Informe descuento porcentual o monto, no ambos")
         if self.surcharge_percent and self.surcharge_amount:
@@ -151,7 +153,9 @@ class FiscalReference:
         _optional_text(self.folio, "folio de referencia", 18)
         _optional_text(self.reason, "razón de referencia", 90)
         if self.correction_code is not None and self.folio is None:
-            raise FiscalDocumentError("Una corrección debe identificar el folio original")
+            raise FiscalDocumentError(
+                "Una corrección debe identificar el folio original"
+            )
 
 
 @dataclass(frozen=True)
@@ -184,17 +188,23 @@ class FiscalDocumentDraft:
         if len({reference.line_number for reference in self.references}) != len(
             self.references
         ):
-            raise FiscalDocumentError("Las referencias no pueden repetir número de línea")
+            raise FiscalDocumentError(
+                "Las referencias no pueden repetir número de línea"
+            )
         self._validate_document_family()
 
     def _validate_document_family(self) -> None:
-        if self.document_type in {
-            DocumentType.FACTURA_AFECTA,
-            DocumentType.FACTURA_EXENTA,
-            DocumentType.GUIA_DESPACHO,
-            DocumentType.NOTA_DEBITO,
-            DocumentType.NOTA_CREDITO,
-        } and self.receiver is None:
+        if (
+            self.document_type
+            in {
+                DocumentType.FACTURA_AFECTA,
+                DocumentType.FACTURA_EXENTA,
+                DocumentType.GUIA_DESPACHO,
+                DocumentType.NOTA_DEBITO,
+                DocumentType.NOTA_CREDITO,
+            }
+            and self.receiver is None
+        ):
             raise FiscalDocumentError("Este documento requiere receptor identificado")
         if self.document_type == DocumentType.BOLETA_EXENTA and any(
             line.tax_category == TaxCategory.AFFECTED for line in self.lines
@@ -208,7 +218,9 @@ class FiscalDocumentDraft:
             DocumentType.BOLETA_AFECTA,
             DocumentType.FACTURA_AFECTA,
         } and not any(line.tax_category == TaxCategory.AFFECTED for line in self.lines):
-            raise FiscalDocumentError("El documento afecto requiere al menos una línea afecta")
+            raise FiscalDocumentError(
+                "El documento afecto requiere al menos una línea afecta"
+            )
         if self.document_type in {
             DocumentType.NOTA_DEBITO,
             DocumentType.NOTA_CREDITO,
@@ -216,7 +228,9 @@ class FiscalDocumentDraft:
             if not self.references or not any(
                 reference.correction_code is not None for reference in self.references
             ):
-                raise FiscalDocumentError("Una nota debe indicar documento y tipo de corrección")
+                raise FiscalDocumentError(
+                    "Una nota debe indicar documento y tipo de corrección"
+                )
         if self.document_type == DocumentType.GUIA_DESPACHO:
             if self.dispatch_reason is None:
                 raise FiscalDocumentError("La guía debe indicar el motivo del traslado")
@@ -225,14 +239,18 @@ class FiscalDocumentDraft:
         if self.payment_terms == PaymentTerms.CREDIT and self.due_on is None:
             raise FiscalDocumentError("Una venta a crédito debe indicar vencimiento")
         if self.due_on is not None and self.due_on < self.issued_on:
-            raise FiscalDocumentError("El vencimiento no puede ser anterior a la emisión")
+            raise FiscalDocumentError(
+                "El vencimiento no puede ser anterior a la emisión"
+            )
 
 
 def _text(value: str, label: str, minimum: int, maximum: int) -> None:
     try:
         length = len(value.encode("iso-8859-1"))
     except UnicodeEncodeError as exc:
-        raise FiscalDocumentError(f"{label.capitalize()} contiene caracteres no admitidos") from exc
+        raise FiscalDocumentError(
+            f"{label.capitalize()} contiene caracteres no admitidos"
+        ) from exc
     if not minimum <= length <= maximum:
         raise FiscalDocumentError(
             f"{label.capitalize()} debe ocupar entre {minimum} y {maximum} bytes"

@@ -10,6 +10,7 @@ from completo_dte.application import (
     IssueInvoiceService,
     RcvReconciliationService,
     ReceivedDecisionService,
+    CertificationDryRunService,
 )
 from completo_dte.domain import (
     ReceivedDocumentValidator,
@@ -20,6 +21,7 @@ from completo_dte.infrastructure import (
 )
 
 from .correction_routes import register_correction_routes
+from .certification_routes import register_certification_routes
 from .document_routes import register_document_routes
 from .operational_routes import register_operational_routes
 from .portal_routes import register_public_portal_routes
@@ -44,6 +46,7 @@ def create_app(
     received_decision_service: ReceivedDecisionService | None = None,
     rcv_repository: RcvRepository | None = None,
     rcv_reconciliation_service: RcvReconciliationService | None = None,
+    certification_dry_run_service: CertificationDryRunService | None = None,
 ) -> FastAPI:
     """Crea una app inyectable; no lee secretos ni abre bases al importar."""
     authenticate = build_authenticator(api_keys)
@@ -94,6 +97,11 @@ def create_app(
         ledger=ledger,
         authenticate=authenticate,
         issue_correction_service=issue_correction_service,
+    )
+    register_certification_routes(
+        app=app,
+        authenticate=authenticate,
+        dry_run_service=certification_dry_run_service,
     )
 
     return app

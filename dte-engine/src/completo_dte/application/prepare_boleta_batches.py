@@ -141,9 +141,13 @@ def _daily_folio(record: FiscalDocumentRecord) -> DailyFolio:
         vat = int(_optional_text(root, "IVA") or 0)
         exempt = int(_optional_text(root, "MntExe") or 0)
     except (ValueError, etree.XMLSyntaxError) as exc:
-        raise ValueError(f"El documento {record.document_id} no sirve para RCOF") from exc
+        raise ValueError(
+            f"El documento {record.document_id} no sirve para RCOF"
+        ) from exc
     if document_type != record.document_type or folio != record.folio:
-        raise ValueError(f"La identidad XML de {record.document_id} no coincide con el ledger")
+        raise ValueError(
+            f"La identidad XML de {record.document_id} no coincide con el ledger"
+        )
     return DailyFolio(
         document_type=document_type,
         folio=folio,

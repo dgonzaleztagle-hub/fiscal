@@ -70,7 +70,9 @@ class ReceivedDocumentValidator:
         try:
             self._schema.validate(xml)
         except ValueError as exc:
-            raise ReceivedDocumentError("El DTE no cumple el XSD oficial fijado") from exc
+            raise ReceivedDocumentError(
+                "El DTE no cumple el XSD oficial fijado"
+            ) from exc
         signed = SignedDte(xml=xml, document_id=document_id)
         if not XmlSigner().verify(signed):
             raise ReceivedDocumentError("La firma XMLDSig del emisor no es válida")
@@ -89,12 +91,18 @@ class ReceivedDocumentValidator:
             issuer_rut = normalize_rut(required("RUTEmisor"))
             receiver_rut = normalize_rut(required("RUTRecep"))
         except (ValueError, TypeError) as exc:
-            raise ReceivedDocumentError("El encabezado tributario recibido es inválido") from exc
+            raise ReceivedDocumentError(
+                "El encabezado tributario recibido es inválido"
+            ) from exc
         if receiver_rut != normalize_rut(expected_receiver_rut):
             raise ReceivedDocumentError("El DTE fue emitido para otro contribuyente")
-        lines = tuple(_received_line(node) for node in root.xpath("//*[local-name()='Detalle']"))
+        lines = tuple(
+            _received_line(node) for node in root.xpath("//*[local-name()='Detalle']")
+        )
         if not lines or len({line.line_number for line in lines}) != len(lines):
-            raise ReceivedDocumentError("El detalle recibido está vacío o repite líneas")
+            raise ReceivedDocumentError(
+                "El detalle recibido está vacío o repite líneas"
+            )
         return ReceivedDocument(
             document_id=document_id,
             document_type=document_type,

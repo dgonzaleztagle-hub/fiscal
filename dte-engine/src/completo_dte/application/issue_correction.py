@@ -156,16 +156,23 @@ class IssueCorrectionService:
         if target is None:
             raise ValueError("El documento original no existe para el tenant")
         reference = note.reference
-        if target.document_type != int(reference.document_type) or target.folio != reference.folio:
+        if (
+            target.document_type != int(reference.document_type)
+            or target.folio != reference.folio
+        ):
             raise ValueError("La referencia no coincide con el documento original")
         target_root = etree.fromstring(
             target.signed_xml,
             etree.XMLParser(resolve_entities=False, no_network=True),
         )
         if _one(target_root, "FchEmis") != reference.issued_on.isoformat():
-            raise ValueError("La fecha de referencia no coincide con el documento original")
+            raise ValueError(
+                "La fecha de referencia no coincide con el documento original"
+            )
         if _one(target_root, "RUTRecep") != note.receiver.rut:
-            raise ValueError("La nota no puede cambiar el RUT receptor del documento original")
+            raise ValueError(
+                "La nota no puede cambiar el RUT receptor del documento original"
+            )
         lease = self._ledger.reserve(
             tenant_id=command.tenant_id,
             taxpayer_rut=note.issuer.rut,
@@ -227,7 +234,9 @@ def correction_command_sha256(command: IssueCorrectionCommand) -> str:
             for line in note.lines
         ],
     }
-    canonical = json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    canonical = json.dumps(
+        payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True
+    )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 

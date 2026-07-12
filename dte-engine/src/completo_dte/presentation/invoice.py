@@ -46,7 +46,7 @@ class InvoiceReceiptRenderer:
         while index < len(details):
             y = self._header(canvas, root, width, height, margin, page)
             available = max(1, int((y - bottom - 55 * mm) / row_height))
-            page_details = details[index:index + available]
+            page_details = details[index : index + available]
             y = self._table_header(canvas, width, margin, y)
             for detail in page_details:
                 name = _child_optional(detail, "NmbItem") or "SIN DESCRIPCIÓN"
@@ -56,13 +56,17 @@ class InvoiceReceiptRenderer:
                 canvas.setFont("Helvetica", 8)
                 canvas.drawString(margin, y, _fit(name, 62))
                 canvas.drawRightString(width - 70 * mm, y, quantity)
-                canvas.drawRightString(width - 38 * mm, y, f"${_clp(price.split('.')[0])}")
+                canvas.drawRightString(
+                    width - 38 * mm, y, f"${_clp(price.split('.')[0])}"
+                )
                 canvas.drawRightString(width - margin, y, f"${_clp(amount)}")
                 y -= row_height
             index += len(page_details)
             if index < len(details):
                 canvas.setFont("Helvetica-Oblique", 7)
-                canvas.drawRightString(width - margin, bottom, "Continúa en página siguiente")
+                canvas.drawRightString(
+                    width - margin, bottom, "Continúa en página siguiente"
+                )
                 canvas.showPage()
                 page += 1
                 continue
@@ -86,10 +90,13 @@ class InvoiceReceiptRenderer:
         canvas.setFont("Helvetica-Bold", 13)
         canvas.drawString(margin, height - 18 * mm, _required(root, "RznSoc"))
         canvas.setFont("Helvetica", 8)
-        canvas.drawString(margin, height - 24 * mm, f"RUT {_required(root, 'RUTEmisor')}")
+        canvas.drawString(
+            margin, height - 24 * mm, f"RUT {_required(root, 'RUTEmisor')}"
+        )
         canvas.drawString(margin, height - 29 * mm, _required(root, "GiroEmis"))
         address = " · ".join(
-            value for value in (_optional(root, "DirOrigen"), _optional(root, "CmnaOrigen"))
+            value
+            for value in (_optional(root, "DirOrigen"), _optional(root, "CmnaOrigen"))
             if value
         )
         if address:
@@ -108,7 +115,9 @@ class InvoiceReceiptRenderer:
             "61": "NOTA DE CRÉDITO ELECTRÓNICA",
         }[_required(root, "TipoDTE")]
         canvas.drawCentredString(box_x + 30 * mm, box_y + 17 * mm, title)
-        canvas.drawCentredString(box_x + 30 * mm, box_y + 10 * mm, f"N° {_required(root, 'Folio')}")
+        canvas.drawCentredString(
+            box_x + 30 * mm, box_y + 10 * mm, f"N° {_required(root, 'Folio')}"
+        )
         canvas.setFont("Helvetica", 7)
         canvas.drawCentredString(box_x + 30 * mm, box_y + 4 * mm, f"Página {page}")
 
@@ -117,18 +126,26 @@ class InvoiceReceiptRenderer:
         canvas.drawString(margin, y, "Receptor")
         canvas.setFont("Helvetica", 8)
         y -= 6 * mm
-        canvas.drawString(margin, y, f"{_required(root, 'RznSocRecep')} · RUT {_required(root, 'RUTRecep')}")
+        canvas.drawString(
+            margin,
+            y,
+            f"{_required(root, 'RznSocRecep')} · RUT {_required(root, 'RUTRecep')}",
+        )
         y -= 5 * mm
         canvas.drawString(margin, y, _required(root, "GiroRecep"))
         y -= 5 * mm
         receiver_address = " · ".join(
-            value for value in (_optional(root, "DirRecep"), _optional(root, "CmnaRecep"))
+            value
+            for value in (_optional(root, "DirRecep"), _optional(root, "CmnaRecep"))
             if value
         )
         canvas.drawString(margin, y, receiver_address)
-        canvas.drawRightString(width - margin, y, f"Emisión: {_required(root, 'FchEmis')}")
+        canvas.drawRightString(
+            width - margin, y, f"Emisión: {_required(root, 'FchEmis')}"
+        )
         destination = " · ".join(
-            value for value in (_optional(root, "DirDest"), _optional(root, "CmnaDest"))
+            value
+            for value in (_optional(root, "DirDest"), _optional(root, "CmnaDest"))
             if value
         )
         if destination:
@@ -187,5 +204,11 @@ class InvoiceReceiptRenderer:
             mask="auto",
         )
         canvas.setFont("Helvetica", 7)
-        canvas.drawString(margin, 14 * mm, f"Timbre electrónico SII · Res. {config.resolution_number} de {config.resolution_year}")
-        canvas.drawRightString(width - margin, 14 * mm, f"Consulta: {config.verification_url}")
+        canvas.drawString(
+            margin,
+            14 * mm,
+            f"Timbre electrónico SII · Res. {config.resolution_number} de {config.resolution_year}",
+        )
+        canvas.drawRightString(
+            width - margin, 14 * mm, f"Consulta: {config.verification_url}"
+        )

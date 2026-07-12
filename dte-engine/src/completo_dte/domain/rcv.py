@@ -56,7 +56,12 @@ class RcvPurchaseEntry:
             raise RcvError("Tipo documental no admitido en compras RCV iniciales")
         if self.folio <= 0:
             raise RcvError("Folio RCV inválido")
-        amounts = (self.exempt_amount, self.net_amount, self.vat_amount, self.total_amount)
+        amounts = (
+            self.exempt_amount,
+            self.net_amount,
+            self.vat_amount,
+            self.total_amount,
+        )
         if any(amount < 0 for amount in amounts):
             raise RcvError("Los montos RCV no pueden ser negativos")
         if self.total_amount != self.exempt_amount + self.net_amount + self.vat_amount:

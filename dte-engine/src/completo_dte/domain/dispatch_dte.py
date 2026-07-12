@@ -54,7 +54,9 @@ class DispatchDteBuilder:
             receiver += _element("Contacto", party.phone)
         if party.email is not None:
             receiver += _element("CorreoRecep", party.email)
-        receiver += _element("DirRecep", party.address) + _element("CmnaRecep", party.commune)
+        receiver += _element("DirRecep", party.address) + _element(
+            "CmnaRecep", party.commune
+        )
         if party.city is not None:
             receiver += _element("CiudadRecep", party.city)
 
@@ -153,6 +155,14 @@ class DispatchDteBuilder:
             b"MNT": str(guide.total),
         }
         for tag, value in expected.items():
-            pattern = rb"<" + tag + rb">" + re.escape(value.encode("ascii")) + rb"</" + tag + rb">"
+            pattern = (
+                rb"<"
+                + tag
+                + rb">"
+                + re.escape(value.encode("ascii"))
+                + rb"</"
+                + tag
+                + rb">"
+            )
             if re.search(pattern, ted.dd) is None:
                 raise TedError(f"El TED no coincide con la guía en {tag.decode()}")

@@ -42,13 +42,20 @@ class CertificateLoader:
                 password.encode("utf-8"),
             )
         except (TypeError, ValueError) as exc:
-            raise CertificateError("No fue posible abrir el PKCS#12; revise archivo y contraseña") from exc
+            raise CertificateError(
+                "No fue posible abrir el PKCS#12; revise archivo y contraseña"
+            ) from exc
 
         if certificate is None or private_key is None:
-            raise CertificateError("El PKCS#12 debe contener certificado y clave privada")
+            raise CertificateError(
+                "El PKCS#12 debe contener certificado y clave privada"
+            )
         if not isinstance(private_key, rsa.RSAPrivateKey):
             raise CertificateError("El certificado debe usar una clave privada RSA")
-        if private_key.public_key().public_numbers() != certificate.public_key().public_numbers():
+        if (
+            private_key.public_key().public_numbers()
+            != certificate.public_key().public_numbers()
+        ):
             raise CertificateError("La clave privada no corresponde al certificado")
 
         instant = (at or datetime.now(timezone.utc)).astimezone(timezone.utc)
@@ -58,4 +65,3 @@ class CertificateLoader:
             raise CertificateError("El certificado está vencido")
 
         return SigningCredential(certificate=certificate, private_key=private_key)
-

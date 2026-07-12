@@ -40,7 +40,9 @@ class CorrectionReference:
         if not 1 <= self.folio <= 9_999_999_999:
             raise CorrectionError("Folio original inválido")
         if not self.reason.strip() or len(self.reason.encode("iso-8859-1")) > 90:
-            raise CorrectionError("La razón de referencia debe ocupar entre 1 y 90 bytes")
+            raise CorrectionError(
+                "La razón de referencia debe ocupar entre 1 y 90 bytes"
+            )
 
 
 @dataclass(frozen=True)
@@ -54,16 +56,23 @@ class CorrectionDocument:
     reference: CorrectionReference
 
     def __post_init__(self) -> None:
-        if self.document_type not in {DocumentType.NOTA_DEBITO, DocumentType.NOTA_CREDITO}:
+        if self.document_type not in {
+            DocumentType.NOTA_DEBITO,
+            DocumentType.NOTA_CREDITO,
+        }:
             raise CorrectionError("Sólo se admiten notas tipos 56 y 61")
         if self.reference.code is CorrectionCode.FIX_TEXT:
             if self.document_type is not DocumentType.NOTA_CREDITO:
-                raise CorrectionError("La corrección de texto requiere nota de crédito 61")
+                raise CorrectionError(
+                    "La corrección de texto requiere nota de crédito 61"
+                )
             if self.reference.document_type not in {
                 DocumentType.FACTURA_AFECTA,
                 DocumentType.FACTURA_EXENTA,
             }:
-                raise CorrectionError("La corrección de texto debe referenciar factura 33/34")
+                raise CorrectionError(
+                    "La corrección de texto debe referenciar factura 33/34"
+                )
             if (
                 len(self.lines) != 1
                 or self.lines[0].quantity != 1
@@ -77,10 +86,14 @@ class CorrectionDocument:
                 DocumentType.FACTURA_AFECTA,
                 DocumentType.FACTURA_EXENTA,
             }:
-                raise CorrectionError("La corrección de montos debe referenciar factura 33/34")
+                raise CorrectionError(
+                    "La corrección de montos debe referenciar factura 33/34"
+                )
         elif self.reference.code is CorrectionCode.VOID:
             if self.document_type is not DocumentType.NOTA_CREDITO:
-                raise CorrectionError("La anulación se genera mediante nota de crédito 61")
+                raise CorrectionError(
+                    "La anulación se genera mediante nota de crédito 61"
+                )
             if self.reference.document_type not in {
                 DocumentType.FACTURA_AFECTA,
                 DocumentType.FACTURA_EXENTA,
@@ -110,18 +123,25 @@ class CorrectionDocument:
                 self.receiver.commune,
             )
         ):
-            raise CorrectionError("La nota requiere giro, dirección y comuna del receptor")
+            raise CorrectionError(
+                "La nota requiere giro, dirección y comuna del receptor"
+            )
         if any(line.tax_category == TaxCategory.NON_BILLABLE for line in self.lines):
-            raise CorrectionError("La corrección de montos no admite líneas no facturables")
+            raise CorrectionError(
+                "La corrección de montos no admite líneas no facturables"
+            )
         if any(
-            line.tax_category == TaxCategory.AFFECTED and line.price_mode != PriceMode.NET
+            line.tax_category == TaxCategory.AFFECTED
+            and line.price_mode != PriceMode.NET
             for line in self.lines
         ):
             raise CorrectionError("Las líneas afectas deben informar precio neto")
         if self.reference.document_type == DocumentType.FACTURA_EXENTA and any(
             line.tax_category != TaxCategory.EXEMPT for line in self.lines
         ):
-            raise CorrectionError("Una corrección de factura 34 sólo admite montos exentos")
+            raise CorrectionError(
+                "Una corrección de factura 34 sólo admite montos exentos"
+            )
         if self.reference.code is CorrectionCode.FIX_TEXT and self.total != 0:
             raise CorrectionError("La corrección de texto no puede modificar montos")
         if self.reference.code is not CorrectionCode.FIX_TEXT and self.total <= 0:

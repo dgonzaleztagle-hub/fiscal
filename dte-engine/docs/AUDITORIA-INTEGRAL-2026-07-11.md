@@ -42,12 +42,12 @@ certificado, CAF y respuestas del SII.
 
 | Componente | Compuerta | Resultado |
 |---|---|---|
-| Motor | suite Pytest completa | verde, 205 casos ejecutados |
+| Motor | suite Pytest completa | verde, 212 casos ejecutados |
 | Motor | Ruff general y reglas de seguridad | verde |
 | Motor | `pip check` / `pip-audit` | verde / 0 vulnerabilidades conocidas |
 | Documentos | matriz 33, 34, 39, 41, 52, 56 y 61 | verde |
 | Consola | ESLint + TypeScript + Next.js 16 build, 23 rutas | verde |
-| Consola E2E | Playwright desktop y móvil, 6 recorridos | verde |
+| Consola E2E | Playwright desktop y móvil, 8 recorridos | verde |
 | Consola | `npm audit --omit=dev` | 0 vulnerabilidades |
 | Reader | Pytest + Ruff | verde |
 | LibreDTE | commit fijado y árbol limpio | verde |

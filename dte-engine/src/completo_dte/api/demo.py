@@ -15,12 +15,17 @@ from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.x509.oid import NameOID
 from lxml import etree
 
-from completo_dte.application import IssueBoletaCommand, IssueBoletaService
+from completo_dte.application import (
+    CertificationDryRunService,
+    IssueBoletaCommand,
+    IssueBoletaService,
+)
 from completo_dte.domain import (
     BoletaLine,
     CafAuthenticityValidator,
     CafLoader,
     Issuer,
+    EnvelopeAuthorization,
     SigningCredential,
     SiiCertificateStore,
 )
@@ -98,6 +103,12 @@ def create_demo_app(*, database_path: Path | None = None):
             verification_url="https://demo.invalid/documentos",
             resolution_number=0,
             resolution_year=2026,
+        ),
+        certification_dry_run_service=CertificationDryRunService(
+            issuer=issuer,
+            caf=next(caf for caf in cafs.values() if caf.data.document_type == 39),
+            credential=credential,
+            authorization=EnvelopeAuthorization(date(2026, 7, 1), 0),
         ),
     )
     app.state.fiscal_environment = "demo"

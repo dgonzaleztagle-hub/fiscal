@@ -29,7 +29,9 @@ class ReceivedRegistrySoapCodec:
         self, *, issuer_rut: str, document_type: int, folio: int, action_code: str
     ) -> bytes:
         if document_type not in {33, 34, 43}:
-            raise ReceivedRegistryCodecError("El WS oficial sólo admite DTE 33, 34 y 43")
+            raise ReceivedRegistryCodecError(
+                "El WS oficial sólo admite DTE 33, 34 y 43"
+            )
         if folio <= 0 or action_code not in {"ACD", "ERM", "RCD", "RFP", "RFT"}:
             raise ReceivedRegistryCodecError("Folio o acción de registro inválida")
         body, operation = _operation("ingresarAceptacionReclamoDoc")
@@ -44,7 +46,9 @@ class ReceivedRegistrySoapCodec:
             etree.SubElement(operation, name).text = value
         return _serialize(body)
 
-    def events_request(self, *, issuer_rut: str, document_type: int, folio: int) -> bytes:
+    def events_request(
+        self, *, issuer_rut: str, document_type: int, folio: int
+    ) -> bytes:
         return self._identity_request(
             "listarEventosHistDoc", issuer_rut, document_type, folio
         )
@@ -59,7 +63,9 @@ class ReceivedRegistrySoapCodec:
     def parse_action_response(self, payload: bytes) -> RegistryResponse:
         root = _parse(payload)
         code = _unique_text(root, {"codResp", "codigo", "CodigoRespuesta"})
-        message = _unique_text(root, {"descResp", "descripcion", "DescripcionRespuesta"})
+        message = _unique_text(
+            root, {"descResp", "descripcion", "DescripcionRespuesta"}
+        )
         try:
             return RegistryResponse(int(code), message)
         except ValueError as exc:

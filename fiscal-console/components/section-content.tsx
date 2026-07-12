@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpenCheck, Building2, FileCheck2, FileMinus2, FilePlus2, PackageCheck, Receipt, Search, ShieldCheck, UploadCloud } from "lucide-react";
+import { ArrowRight, BookOpenCheck, Building2, FileCheck2, FileMinus2, FilePlus2, PackageCheck, Receipt, Search, ShieldCheck } from "lucide-react";
 import { navigationSections, type NavigationSection } from "@/lib/demo-data";
 import { DocumentTable } from "./document-table";
 import { ClientsSection, ProductsSection } from "./catalog-sections";
@@ -7,6 +7,7 @@ import { ReceivedInbox } from "./received-inbox";
 import { RcvReport } from "./rcv-report";
 import { Onboarding } from "./onboarding";
 import { BheSection, F29Section, RcvSection, SiiProfileSection, SyncSection } from "./sii-sections";
+import { CertificationCockpit } from "./certification-cockpit";
 
 const issueOptions = [
   { code: "39 / 41", title: "Registrar una venta", detail: "Boleta afecta o exenta según los productos.", icon: Receipt, ready: true },
@@ -47,12 +48,6 @@ function DocumentsSection({ content }: { content: SectionCopy }) {
 }
 
 function CertificationSection({ content }: { content: SectionCopy }) {
-  const checks = [
-    ["Motor y regresión documental", "197 pruebas locales aprobadas; DTE 33/34/39/41/52/56/61 implementados", true],
-    ["Worker, sobres y RCOF durable", "Lotes mixtos, Track ID, QueryEstUp y estados ambiguos cubiertos", true],
-    ["Representación y consulta pública", "PDF417 verificable; falta despliegue HTTPS", false],
-    ["Certificado digital real", "Pendiente de compra y prueba privada", false],
-    ["CAF de cinco folios", "Bloqueado deliberadamente para no iniciar las 24 horas", false],
-  ] as const;
-  return <div className="page section-page"><header className="page-header"><div><p className="eyebrow">{content.eyebrow}</p><h1>{content.title}</h1><p>{content.description}</p></div><span className="lock-badge">CAF real bloqueado</span></header><section className="certification-grid"><div className="panel"><p className="eyebrow">Preparación Roda</p><h2>2 de 5 controles técnicos listos</h2><div className="completion"><span style={{ width: "40%" }} /></div>{checks.map(([title, detail, done]) => <div className="check-row" key={title}><span className={done ? "done" : "pending"}>{done ? "✓" : "·"}</span><div><strong>{title}</strong><p>{detail}</p></div></div>)}</div><div className="panel evidence-card"><UploadCloud size={25} /><p className="eyebrow">Evidencia automática</p><h2>Paquete de certificación</h2><p>Cuando todo esté verde, la consola reunirá los cinco DTE, sobre, RCOF, hashes, Track ID y respuestas sin exponer secretos.</p><button className="secondary-button" disabled>Disponible al completar controles</button></div></section></div>;
+  void content;
+  return <CertificationCockpit />;
 }

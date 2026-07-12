@@ -23,7 +23,9 @@ class XmlSchemaValidator:
             schema_document = etree.parse(str(path), parser)
             self._schema = etree.XMLSchema(schema_document)
         except (etree.XMLSyntaxError, etree.XMLSchemaParseError) as exc:
-            raise SchemaValidationError(f"No fue posible cargar el schema {path.name}") from exc
+            raise SchemaValidationError(
+                f"No fue posible cargar el schema {path.name}"
+            ) from exc
 
     def validate(self, xml: bytes) -> None:
         parser = etree.XMLParser(
@@ -34,9 +36,12 @@ class XmlSchemaValidator:
         try:
             document = etree.fromstring(xml, parser)
         except etree.XMLSyntaxError as exc:
-            raise SchemaValidationError("El artefacto tributario no es XML válido") from exc
+            raise SchemaValidationError(
+                "El artefacto tributario no es XML válido"
+            ) from exc
         if self._schema.validate(document):
             return
-        errors = "; ".join(entry.message for entry in tuple(self._schema.error_log)[-5:])
+        errors = "; ".join(
+            entry.message for entry in tuple(self._schema.error_log)[-5:]
+        )
         raise SchemaValidationError(f"El XML no cumple el schema: {errors}")
-

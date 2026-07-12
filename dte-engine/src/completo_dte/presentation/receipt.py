@@ -55,7 +55,9 @@ class BoletaReceiptRenderer:
         canvas = Canvas(output, pagesize=(width, height), pageCompression=1)
         y = height - 7 * mm
 
-        def centered(text: str, size: float, *, bold: bool = False, gap: float = 4.2) -> None:
+        def centered(
+            text: str, size: float, *, bold: bool = False, gap: float = 4.2
+        ) -> None:
             nonlocal y
             canvas.setFont("Helvetica-Bold" if bold else "Helvetica", size)
             canvas.drawCentredString(width / 2, y, text)
@@ -72,14 +74,20 @@ class BoletaReceiptRenderer:
         centered(f"RUT: {_required(root, 'RUTEmisor')}", 8)
         centered(_required(root, "GiroEmisor"), 7)
         address = " - ".join(
-            value for value in (_optional(root, "DirOrigen"), _optional(root, "CmnaOrigen")) if value
+            value
+            for value in (_optional(root, "DirOrigen"), _optional(root, "CmnaOrigen"))
+            if value
         )
         if address:
             centered(address, 7, gap=5)
 
         canvas.line(5 * mm, y, width - 5 * mm, y)
         y -= 5 * mm
-        title = "BOLETA ELECTRÓNICA" if document_type == "39" else "BOLETA EXENTA ELECTRÓNICA"
+        title = (
+            "BOLETA ELECTRÓNICA"
+            if document_type == "39"
+            else "BOLETA EXENTA ELECTRÓNICA"
+        )
         centered(title, 10, bold=True)
         centered(f"N° {_required(root, 'Folio')}", 11, bold=True, gap=5)
         pair("Fecha", _required(root, "FchEmis"))
@@ -94,7 +102,11 @@ class BoletaReceiptRenderer:
             amount = _child_required(detail, "MontoItem")
             canvas.setFont("Helvetica", 7.5)
             canvas.drawString(5 * mm, y, _fit(name, 38))
-            canvas.drawRightString(width - 5 * mm, y, f"{quantity}{' ' + unit if unit else ''}  ${_clp(amount)}")
+            canvas.drawRightString(
+                width - 5 * mm,
+                y,
+                f"{quantity}{' ' + unit if unit else ''}  ${_clp(amount)}",
+            )
             y -= 4 * mm
 
         y -= 1 * mm
@@ -145,7 +157,9 @@ def _parse(payload: bytes) -> etree._Element:
     try:
         return etree.fromstring(
             payload,
-            etree.XMLParser(resolve_entities=False, no_network=True, remove_blank_text=False),
+            etree.XMLParser(
+                resolve_entities=False, no_network=True, remove_blank_text=False
+            ),
         )
     except etree.XMLSyntaxError as exc:
         raise ReceiptError("El DTE no es XML válido") from exc

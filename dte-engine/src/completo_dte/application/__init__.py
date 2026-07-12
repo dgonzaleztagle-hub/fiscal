@@ -7,6 +7,7 @@ from .deliver_invoice import (
     MailAttachment,
     MailGateway,
 )
+from .certification_dry_run import CertificationDryRunResult, CertificationDryRunService
 from .issue_boleta import IssueBoletaCommand, IssueBoletaService
 from .ingest_received_document import ReceivedDocumentIngestionService
 from .import_received_email import (
@@ -49,6 +50,8 @@ from .submit_boleta_envelope import (
 
 __all__ = [
     "BoletaEnvelopeWorker",
+    "CertificationDryRunResult",
+    "CertificationDryRunService",
     "AnnulDocumentCommand",
     "CorrectTextCommand",
     "BoletaBatchCoordinator",

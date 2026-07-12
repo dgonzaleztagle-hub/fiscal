@@ -54,12 +54,20 @@ class CorrectionDteBuilder:
         if correction.exempt_total:
             totals += _element("MntExe", str(correction.exempt_total))
         if correction.net_total:
-            totals += _element("TasaIVA", "19") + _element("IVA", str(correction.vat_total))
+            totals += _element("TasaIVA", "19") + _element(
+                "IVA", str(correction.vat_total)
+            )
         totals += _element("MntTotal", str(correction.total))
         header = (
-            b"<Encabezado><IdDoc>" + id_doc + b"</IdDoc><Emisor>" + emitter
-            + b"</Emisor><Receptor>" + recipient + b"</Receptor><Totales>"
-            + totals + b"</Totales></Encabezado>"
+            b"<Encabezado><IdDoc>"
+            + id_doc
+            + b"</IdDoc><Emisor>"
+            + emitter
+            + b"</Emisor><Receptor>"
+            + recipient
+            + b"</Receptor><Totales>"
+            + totals
+            + b"</Totales></Encabezado>"
         )
         details = b"".join(
             self._detail(correction, index, line)
@@ -77,14 +85,23 @@ class CorrectionDteBuilder:
             + b"</Referencia>"
         )
         document = (
-            b'<Documento ID="' + document_id.encode("ascii") + b'">' + header
-            + details + reference_xml + ted.xml
-            + _element("TmstFirma", _sii_local_timestamp(signed_at)) + b"</Documento>"
+            b'<Documento ID="'
+            + document_id.encode("ascii")
+            + b'">'
+            + header
+            + details
+            + reference_xml
+            + ted.xml
+            + _element("TmstFirma", _sii_local_timestamp(signed_at))
+            + b"</Documento>"
         )
         return UnsignedDte(
-            xml=(b'<?xml version="1.0" encoding="ISO-8859-1"?>'
-                 b'<DTE version="1.0" xmlns="http://www.sii.cl/SiiDte">'
-                 + document + b"</DTE>"),
+            xml=(
+                b'<?xml version="1.0" encoding="ISO-8859-1"?>'
+                b'<DTE version="1.0" xmlns="http://www.sii.cl/SiiDte">'
+                + document
+                + b"</DTE>"
+            ),
             document_id=document_id,
         )
 
@@ -111,6 +128,14 @@ class CorrectionDteBuilder:
             b"MNT": str(correction.total),
         }
         for tag, value in expected.items():
-            pattern = rb"<" + tag + rb">" + re.escape(value.encode("ascii")) + rb"</" + tag + rb">"
+            pattern = (
+                rb"<"
+                + tag
+                + rb">"
+                + re.escape(value.encode("ascii"))
+                + rb"</"
+                + tag
+                + rb">"
+            )
             if re.search(pattern, ted.dd) is None:
                 raise TedError(f"El TED no coincide con la nota en {tag.decode()}")
