@@ -16,6 +16,9 @@ certificado, CAF y respuestas del SII.
 - Se extrajeron los estados, errores y records persistentes desde `folio_ledger.py` a
   `infrastructure/records.py`. Esto elimina 218 líneas de modelos mezclados con SQL y
   permite reemplazar SQLite por PostgreSQL sin cambiar el contrato de dominio.
+- La persistencia quedó dividida en núcleo de folios, documentos, transmisión/entrega y
+  recepción/compras. Los mixins conservan la misma conexión y frontera transaccional;
+  `folio_ledger.py` bajó de 1.912 a 374 líneas sin introducir commits intermedios.
 - Se extrajo la autenticación por tenant a `api/security.py`. La comparación del secreto
   sigue siendo constante y ahora tiene pruebas específicas para token válido, ausente,
   inválido y configuración incompleta.
@@ -75,8 +78,9 @@ cubiertas por pruebas. Sí quedan dos concentraciones que deben reducirse por et
 
 1. `document_routes.py`: dividir la construcción de comandos de emisión en mapeadores
    pequeños cuando se agreguen nuevos impuestos o tipos documentales.
-2. `folio_ledger.py` (1.912 líneas): separar repositorios de documentos, sobres,
-   recepción/RCV y entregas conservando una única transacción por operación.
+2. Reemplazar gradualmente los mixins SQLite por puertos de repositorio PostgreSQL cuando
+   exista el esquema privado de Supabase; la división actual ya separa esas fronteras sin
+   alterar la atomicidad local.
 
 Estas tareas son P2 de mantenibilidad, no defectos funcionales. Hacer la separación en
 un solo cambio gigante aumentaría el riesgo justo antes de la certificación; debe hacerse

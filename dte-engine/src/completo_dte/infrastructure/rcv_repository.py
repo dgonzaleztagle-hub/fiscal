@@ -1,14 +1,15 @@
 """Snapshots RCV inmutables e independientes del formato del conector."""
 
-from dataclasses import dataclass
-from datetime import datetime, timezone
 import hashlib
 import json
-from pathlib import Path
 import sqlite3
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
 from uuid import uuid4
 
 from completo_dte.domain import RcvPeriod, RcvPurchaseEntry, RcvPurchaseStatus
+
 from .folio_ledger import FolioLedgerError
 
 
@@ -60,16 +61,27 @@ class RcvRepository:
             if existing is not None:
                 connection.execute("COMMIT")
                 return _snapshot(existing)
-            version = connection.execute(
-                "SELECT COUNT(*) FROM rcv_purchase_snapshots WHERE tenant_id=? AND period=?",
-                (tenant_id, period.key),
-            ).fetchone()[0] + 1
+            version = (
+                connection.execute(
+                    "SELECT COUNT(*) FROM rcv_purchase_snapshots WHERE tenant_id=? AND period=?",
+                    (tenant_id, period.key),
+                ).fetchone()[0]
+                + 1
+            )
             snapshot_id = str(uuid4())
             connection.execute(
                 """INSERT INTO rcv_purchase_snapshots
                    (id,tenant_id,period,version,source,payload_sha256,imported_at)
                    VALUES (?,?,?,?,?,?,?)""",
-                (snapshot_id, tenant_id, period.key, version, source, payload_hash, now),
+                (
+                    snapshot_id,
+                    tenant_id,
+                    period.key,
+                    version,
+                    source,
+                    payload_hash,
+                    now,
+                ),
             )
             for entry in entries:
                 connection.execute(
@@ -78,10 +90,17 @@ class RcvRepository:
                         exempt_amount,net_amount,vat_amount,total_amount,status)
                        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
                     (
-                        str(uuid4()), snapshot_id, entry.issuer_rut,
-                        int(entry.document_type), entry.folio, entry.issued_on.isoformat(),
-                        entry.exempt_amount, entry.net_amount, entry.vat_amount,
-                        entry.total_amount, entry.status.value,
+                        str(uuid4()),
+                        snapshot_id,
+                        entry.issuer_rut,
+                        int(entry.document_type),
+                        entry.folio,
+                        entry.issued_on.isoformat(),
+                        entry.exempt_amount,
+                        entry.net_amount,
+                        entry.vat_amount,
+                        entry.total_amount,
+                        entry.status.value,
                     ),
                 )
             connection.execute("COMMIT")
@@ -96,7 +115,9 @@ class RcvRepository:
         finally:
             connection.close()
 
-    def latest_snapshot(self, *, tenant_id: str, period: RcvPeriod) -> RcvSnapshotRecord | None:
+    def latest_snapshot(
+        self, *, tenant_id: str, period: RcvPeriod
+    ) -> RcvSnapshotRecord | None:
         connection = self._connect()
         try:
             row = connection.execute(
@@ -156,6 +177,7 @@ def _snapshot(row) -> RcvSnapshotRecord:
 
 def _entry(row) -> RcvEntryRecord:
     from datetime import date
+
     from completo_dte.domain import DocumentType
 
     return RcvEntryRecord(

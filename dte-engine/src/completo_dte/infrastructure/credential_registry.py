@@ -1,12 +1,13 @@
 """Registro de referencias opacas; jamás almacena PFX o contraseñas."""
 
+import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-import sqlite3
 from uuid import uuid4
 
 from completo_dte.domain import normalize_rut
+
 from .folio_ledger import FolioLedgerError
 
 
@@ -53,7 +54,10 @@ class CredentialReferenceRegistry:
                    WHERE tenant_id=? AND taxpayer_rut=? AND retired_at IS NULL""",
                 (tenant_id, taxpayer_rut),
             ).fetchone()
-            if current is not None and current["certificate_sha256"].lower() == certificate_sha256.lower():
+            if (
+                current is not None
+                and current["certificate_sha256"].lower() == certificate_sha256.lower()
+            ):
                 connection.execute("COMMIT")
                 return _record(current)
             connection.execute(
@@ -67,8 +71,13 @@ class CredentialReferenceRegistry:
                    (id,tenant_id,taxpayer_rut,vault_ref,certificate_sha256,active_from,created_at)
                    VALUES (?,?,?,?,?,?,?)""",
                 (
-                    record_id, tenant_id, taxpayer_rut, vault_ref,
-                    certificate_sha256.lower(), active_from.isoformat(), now,
+                    record_id,
+                    tenant_id,
+                    taxpayer_rut,
+                    vault_ref,
+                    certificate_sha256.lower(),
+                    active_from.isoformat(),
+                    now,
                 ),
             )
             connection.execute("COMMIT")
@@ -83,7 +92,9 @@ class CredentialReferenceRegistry:
         finally:
             connection.close()
 
-    def active(self, *, tenant_id: str, taxpayer_rut: str) -> CredentialReferenceRecord | None:
+    def active(
+        self, *, tenant_id: str, taxpayer_rut: str
+    ) -> CredentialReferenceRecord | None:
         connection = self._connect()
         try:
             row = connection.execute(

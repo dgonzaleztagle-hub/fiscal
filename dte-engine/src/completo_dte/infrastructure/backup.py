@@ -1,11 +1,11 @@
 """Respaldo verificable del adaptador SQLite local."""
 
-from dataclasses import dataclass
-from datetime import datetime, timezone
 import hashlib
 import json
-from pathlib import Path
 import sqlite3
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
 
 
 class BackupError(RuntimeError):
@@ -59,7 +59,10 @@ class SqliteBackupService:
         if not backup.is_file() or target.exists():
             raise BackupError("Respaldo inexistente o destino de restauración ocupado")
         payload = backup.read_bytes()
-        if len(payload) != manifest.database_size or hashlib.sha256(payload).hexdigest() != manifest.database_sha256:
+        if (
+            len(payload) != manifest.database_size
+            or hashlib.sha256(payload).hexdigest() != manifest.database_sha256
+        ):
             raise BackupError("El respaldo no coincide con su manifiesto")
         source_connection = sqlite3.connect(backup)
         target_connection = sqlite3.connect(target)
