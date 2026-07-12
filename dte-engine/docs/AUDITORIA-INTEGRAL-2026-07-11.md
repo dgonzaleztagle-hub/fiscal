@@ -76,8 +76,8 @@ No se dividieron artificialmente reglas tributarias sólo para bajar métricas. 
 validaciones de facturas, notas y guías son complejas por sus invariantes y hoy están
 cubiertas por pruebas. Sí quedan dos concentraciones que deben reducirse por etapas:
 
-1. `document_routes.py`: dividir la construcción de comandos de emisión en mapeadores
-   pequeños cuando se agreguen nuevos impuestos o tipos documentales.
+1. Los comandos de boleta, factura y guía ya se construyen en mapeadores separados; al
+   agregar nuevos impuestos se debe mantener esa frontera y no devolver lógica al router.
 2. Reemplazar gradualmente los mixins SQLite por puertos de repositorio PostgreSQL cuando
    exista el esquema privado de Supabase; la división actual ya separa esas fronteras sin
    alterar la atomicidad local.

@@ -19,6 +19,7 @@ from completo_dte.infrastructure import (
     RcvRepository,
 )
 
+from .correction_routes import register_correction_routes
 from .document_routes import register_document_routes
 from .operational_routes import register_operational_routes
 from .portal_routes import register_public_portal_routes
@@ -86,8 +87,13 @@ def create_app(
         authenticate=authenticate,
         issue_service=issue_service,
         issue_invoice_service=issue_invoice_service,
-        issue_correction_service=issue_correction_service,
         issue_dispatch_service=issue_dispatch_service,
+    )
+    register_correction_routes(
+        app=app,
+        ledger=ledger,
+        authenticate=authenticate,
+        issue_correction_service=issue_correction_service,
     )
 
     return app
