@@ -44,14 +44,14 @@ certificado, CAF y respuestas del SII.
 | Motor | Ruff general y reglas de seguridad | verde |
 | Motor | `pip check` / `pip-audit` | verde / 0 vulnerabilidades conocidas |
 | Documentos | matriz 33, 34, 39, 41, 52, 56 y 61 | verde |
-| Consola | Next.js 16 build + TypeScript, 23 rutas | verde |
+| Consola | ESLint + TypeScript + Next.js 16 build, 23 rutas | verde |
 | Consola | `npm audit --omit=dev` | 0 vulnerabilidades |
 | Reader | Pytest + Ruff | verde |
 | LibreDTE | commit fijado y árbol limpio | verde |
 
-La consola no define un script `lint`; por ahora la compilación TypeScript estricta es la
-compuerta estática. Conviene incorporar ESLint cuando exista una configuración acordada,
-sin aceptar un preset masivo a ciegas.
+La consola incorpora ESLint con los presets oficiales `core-web-vitals` y TypeScript de
+Next 16, ejecutado con cero advertencias permitidas. El cliente OpenAPI generado queda
+excluido porque no es código mantenido manualmente.
 
 ## Comparación LibreDTE
 

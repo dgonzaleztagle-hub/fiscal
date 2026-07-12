@@ -14,7 +14,6 @@ import {
   FileInput,
   FileOutput,
   Gauge,
-  PackageSearch,
   ScanSearch,
   ReceiptText,
   Send,
