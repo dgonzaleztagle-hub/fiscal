@@ -67,7 +67,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             const Icon = item.icon;
             const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
             return (
-              <Link className={`nav-link${active ? " active" : ""}${"accent" in item ? " nav-accent" : ""}`} href={item.href} key={item.href}>
+              <Link aria-label={item.label} className={`nav-link${active ? " active" : ""}${"accent" in item ? " nav-accent" : ""}`} href={item.href} key={item.href}>
                 <Icon size={18} aria-hidden="true" /><span>{item.label}</span>
                 {"count" in item && <em>{item.count}</em>}
               </Link>
