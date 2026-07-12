@@ -26,6 +26,8 @@ certificado, CAF y respuestas del SII.
   registros a `api/projections.py`. Las rutas quedaron divididas por emisión, recepción,
   RCV, reportes, operación y portal público. `app.py` bajó de 1.546 a 94 líneas y ahora
   sólo compone dependencias, sin modificar rutas ni modelos OpenAPI.
+- El exportador OpenAPI ordena sus claves para que mover routers no genere diferencias
+  artificiales; el cliente TypeScript fue regenerado dos veces con SHA-256 idéntico.
 - El parser CAF dejó de usar `xml.etree`: ahora usa `lxml` sin DTD, red ni resolución de
   entidades, con límite de 1 MB. Se añadieron regresiones XXE y de tamaño excesivo.
 - Se actualizaron `cryptography` a `>=48.0.1,<49` y el entorno de auditoría a una versión

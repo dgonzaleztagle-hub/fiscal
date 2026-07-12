@@ -21,6 +21,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/public/v1/boletas/{public_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public Receipt Page */
+        get: operations["public_receipt_page_public_v1_boletas__public_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/public/v1/boletas/{public_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public Receipt Pdf */
+        get: operations["public_receipt_pdf_public_v1_boletas__public_id__pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/capabilities": {
         parameters: {
             query?: never;
@@ -30,6 +64,23 @@ export interface paths {
         };
         /** Capabilities */
         get: operations["capabilities_v1_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/fiscal-deliveries/{delivery_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Fiscal Delivery */
+        get: operations["get_fiscal_delivery_v1_fiscal_deliveries__delivery_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -90,23 +141,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/fiscal-documents/{record_id}/corrections": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Issue Amount Correction */
-        post: operations["issue_amount_correction_v1_fiscal_documents__record_id__corrections_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/fiscal-documents/{record_id}/annulment": {
         parameters: {
             query?: never;
@@ -118,6 +152,23 @@ export interface paths {
         put?: never;
         /** Annul Fiscal Document */
         post: operations["annul_fiscal_document_v1_fiscal_documents__record_id__annulment_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/fiscal-documents/{record_id}/corrections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue Amount Correction */
+        post: operations["issue_amount_correction_v1_fiscal_documents__record_id__corrections_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -141,24 +192,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/fiscal-documents/{record_id}/xml": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Document Xml */
-        get: operations["get_document_xml_v1_fiscal_documents__record_id__xml_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/received-documents/import": {
+    "/v1/fiscal-documents/{record_id}/deliveries": {
         parameters: {
             query?: never;
             header?: never;
@@ -167,196 +201,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Import Received Document */
-        post: operations["import_received_document_v1_received_documents_import_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/received-documents": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Received Documents */
-        get: operations["list_received_documents_v1_received_documents_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/received-documents/{record_id}/decision": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Decide Received Document */
-        post: operations["decide_received_document_v1_received_documents__record_id__decision_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/received-decisions/{decision_id}/reconcile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Reconcile Received Decision */
-        post: operations["reconcile_received_decision_v1_received_decisions__decision_id__reconcile_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/received-documents/{record_id}/classification": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Received Classification */
-        get: operations["get_received_classification_v1_received_documents__record_id__classification_get"];
-        put?: never;
-        /** Classify Received Document */
-        post: operations["classify_received_document_v1_received_documents__record_id__classification_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/received-classifications/{classification_id}/line-allocations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Allocate Received Lines */
-        post: operations["allocate_received_lines_v1_received_classifications__classification_id__line_allocations_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/rcv/purchases/snapshots": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Import Rcv Snapshot */
-        post: operations["import_rcv_snapshot_v1_rcv_purchases_snapshots_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/rcv/purchases/{year}/{month}/reconciliation": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Reconcile Rcv Snapshot */
-        get: operations["reconcile_rcv_snapshot_v1_rcv_purchases__year___month__reconciliation_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/reports/monthly/{year}/{month}.csv": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Export Monthly Csv */
-        get: operations["export_monthly_csv_v1_reports_monthly__year___month__csv_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/reports/monthly/{year}/{month}.xlsx": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Export Monthly Xlsx */
-        get: operations["export_monthly_xlsx_v1_reports_monthly__year___month__xlsx_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/reports/monthly/{year}/{month}.pdf": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Export Monthly Pdf */
-        get: operations["export_monthly_pdf_v1_reports_monthly__year___month__pdf_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/reports/monthly/{year}/{month}/accountant-package.zip": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Export Accountant Package */
-        get: operations["export_accountant_package_v1_reports_monthly__year___month__accountant_package_zip_get"];
-        put?: never;
-        post?: never;
+        /** Queue Invoice Delivery */
+        post: operations["queue_invoice_delivery_v1_fiscal_documents__record_id__deliveries_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -397,32 +243,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/fiscal-documents/{record_id}/deliveries": {
+    "/v1/fiscal-documents/{record_id}/xml": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /** Queue Invoice Delivery */
-        post: operations["queue_invoice_delivery_v1_fiscal_documents__record_id__deliveries_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/fiscal-deliveries/{delivery_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Fiscal Delivery */
-        get: operations["get_fiscal_delivery_v1_fiscal_deliveries__delivery_id__get"];
+        /** Get Document Xml */
+        get: operations["get_document_xml_v1_fiscal_documents__record_id__xml_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -465,15 +294,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/public/v1/boletas/{public_id}": {
+    "/v1/rcv/purchases/snapshots": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Public Receipt Page */
-        get: operations["public_receipt_page_public_v1_boletas__public_id__get"];
+        get?: never;
+        put?: never;
+        /** Import Rcv Snapshot */
+        post: operations["import_rcv_snapshot_v1_rcv_purchases_snapshots_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/rcv/purchases/{year}/{month}/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reconcile Rcv Snapshot */
+        get: operations["reconcile_rcv_snapshot_v1_rcv_purchases__year___month__reconciliation_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -482,15 +328,169 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/public/v1/boletas/{public_id}/pdf": {
+    "/v1/received-classifications/{classification_id}/line-allocations": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Public Receipt Pdf */
-        get: operations["public_receipt_pdf_public_v1_boletas__public_id__pdf_get"];
+        get?: never;
+        put?: never;
+        /** Allocate Received Lines */
+        post: operations["allocate_received_lines_v1_received_classifications__classification_id__line_allocations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/received-decisions/{decision_id}/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reconcile Received Decision */
+        post: operations["reconcile_received_decision_v1_received_decisions__decision_id__reconcile_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/received-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Received Documents */
+        get: operations["list_received_documents_v1_received_documents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/received-documents/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Received Document */
+        post: operations["import_received_document_v1_received_documents_import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/received-documents/{record_id}/classification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Received Classification */
+        get: operations["get_received_classification_v1_received_documents__record_id__classification_get"];
+        put?: never;
+        /** Classify Received Document */
+        post: operations["classify_received_document_v1_received_documents__record_id__classification_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/received-documents/{record_id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Decide Received Document */
+        post: operations["decide_received_document_v1_received_documents__record_id__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/monthly/{year}/{month}.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Monthly Csv */
+        get: operations["export_monthly_csv_v1_reports_monthly__year___month__csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/monthly/{year}/{month}.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Monthly Pdf */
+        get: operations["export_monthly_pdf_v1_reports_monthly__year___month__pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/monthly/{year}/{month}.xlsx": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Monthly Xlsx */
+        get: operations["export_monthly_xlsx_v1_reports_monthly__year___month__xlsx_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/monthly/{year}/{month}/accountant-package.zip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Accountant Package */
+        get: operations["export_accountant_package_v1_reports_monthly__year___month__accountant_package_zip_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -537,26 +537,26 @@ export interface components {
         };
         /** DeliveryResponse */
         DeliveryResponse: {
-            /** Id */
-            id: string;
-            /** Document Record Id */
-            document_record_id: string;
-            /** Recipient Email */
-            recipient_email: string;
-            /** Status */
-            status: string;
             /** Attempt Count */
             attempt_count: number;
+            /** Created At */
+            created_at: string;
+            /** Document Record Id */
+            document_record_id: string;
+            /** Error Message */
+            error_message: string | null;
             /** Exchange Xml Sha256 */
             exchange_xml_sha256: string;
+            /** Id */
+            id: string;
             /** Pdf Sha256 */
             pdf_sha256: string;
             /** Provider Id */
             provider_id: string | null;
-            /** Error Message */
-            error_message: string | null;
-            /** Created At */
-            created_at: string;
+            /** Recipient Email */
+            recipient_email: string;
+            /** Status */
+            status: string;
             /** Updated At */
             updated_at: string;
         };
@@ -573,49 +573,49 @@ export interface components {
         DispatchReason: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
         /** DispatchTransportRequest */
         DispatchTransportRequest: {
-            /** Vehicle Plate */
-            vehicle_plate?: string | null;
             /** Carrier Rut */
             carrier_rut?: string | null;
-            /** Driver Rut */
-            driver_rut?: string | null;
-            /** Driver Name */
-            driver_name?: string | null;
             /** Destination Address */
             destination_address?: string | null;
-            /** Destination Commune */
-            destination_commune?: string | null;
             /** Destination City */
             destination_city?: string | null;
+            /** Destination Commune */
+            destination_commune?: string | null;
+            /** Driver Name */
+            driver_name?: string | null;
+            /** Driver Rut */
+            driver_rut?: string | null;
+            /** Vehicle Plate */
+            vehicle_plate?: string | null;
         };
         /** DocumentResponse */
         DocumentResponse: {
-            /** Id */
-            id: string;
+            /** Counterparty Name */
+            counterparty_name: string;
+            /** Created At */
+            created_at: string;
             /** Document Id */
             document_id: string;
             /** Document Type */
             document_type: number;
             /** Folio */
             folio: number;
-            /** Taxpayer Rut */
-            taxpayer_rut: string;
-            /** Status */
-            status: string;
-            /** Xml Sha256 */
-            xml_sha256: string;
-            /** Created At */
-            created_at: string;
-            /** Xml Url */
-            xml_url: string;
-            /** Public Url */
-            public_url: string;
-            /** Counterparty Name */
-            counterparty_name: string;
+            /** Id */
+            id: string;
             /** Issued On */
             issued_on: string;
+            /** Public Url */
+            public_url: string;
+            /** Status */
+            status: string;
+            /** Taxpayer Rut */
+            taxpayer_rut: string;
             /** Total */
             total: number;
+            /** Xml Sha256 */
+            xml_sha256: string;
+            /** Xml Url */
+            xml_url: string;
         };
         /**
          * DocumentType
@@ -624,130 +624,130 @@ export interface components {
         DocumentType: 33 | 34 | 39 | 41 | 52 | 56 | 61;
         /** DraftValidationResponse */
         DraftValidationResponse: {
-            /** Valid */
-            valid: boolean;
-            /** Document Type */
-            document_type: number;
+            /** Builder Status */
+            builder_status: string;
             /** Document Name */
             document_name: string;
+            /** Document Type */
+            document_type: number;
             /** Line Count */
             line_count: number;
             /** Receiver Required */
             receiver_required: boolean;
-            /** Builder Status */
-            builder_status: string;
+            /** Valid */
+            valid: boolean;
         };
         /** EnvelopeResponse */
         EnvelopeResponse: {
+            /** Created At */
+            created_at: string;
+            /** Document Id */
+            document_id: string;
             /** Id */
             id: string;
             /** Kind */
             kind: string;
-            /** Document Id */
-            document_id: string;
-            /** Taxpayer Rut */
-            taxpayer_rut: string;
             /** Status */
             status: string;
+            /** Taxpayer Rut */
+            taxpayer_rut: string;
             /** Track Id */
             track_id: string | null;
-            /** Xml Sha256 */
-            xml_sha256: string;
-            /** Created At */
-            created_at: string;
             /** Updated At */
             updated_at: string;
+            /** Xml Sha256 */
+            xml_sha256: string;
         };
         /** EventResponse */
         EventResponse: {
-            /** Sequence */
-            sequence: number;
             /** Event Type */
             event_type: string;
-            /** Occurred At */
-            occurred_at: string;
             /** Metadata */
             metadata: {
                 [key: string]: unknown;
             };
+            /** Occurred At */
+            occurred_at: string;
+            /** Sequence */
+            sequence: number;
         };
         /** FiscalDraftRequest */
         FiscalDraftRequest: {
             /** Branch Id */
             branch_id: string;
-            /** Issuer Profile Id */
-            issuer_profile_id: string;
-            document_type: components["schemas"]["DocumentType"];
-            /**
-             * Issued On
-             * Format: date
-             */
-            issued_on: string;
-            /** Lines */
-            lines: components["schemas"]["FiscalLineRequest"][];
-            receiver?: components["schemas"]["PartyRequest"] | null;
-            payment_method?: components["schemas"]["PaymentMethod"] | null;
-            payment_terms?: components["schemas"]["PaymentTerms"] | null;
-            /** Due On */
-            due_on?: string | null;
-            dispatch_reason?: components["schemas"]["DispatchReason"] | null;
-            /**
-             * References
-             * @default []
-             */
-            references: components["schemas"]["FiscalReferenceRequest"][];
             /**
              * Currency
              * @default CLP
              */
             currency: string;
+            dispatch_reason?: components["schemas"]["DispatchReason"] | null;
+            document_type: components["schemas"]["DocumentType"];
+            /** Due On */
+            due_on?: string | null;
+            /**
+             * Issued On
+             * Format: date
+             */
+            issued_on: string;
+            /** Issuer Profile Id */
+            issuer_profile_id: string;
+            /** Lines */
+            lines: components["schemas"]["FiscalLineRequest"][];
+            payment_method?: components["schemas"]["PaymentMethod"] | null;
+            payment_terms?: components["schemas"]["PaymentTerms"] | null;
+            receiver?: components["schemas"]["PartyRequest"] | null;
+            /**
+             * References
+             * @default []
+             */
+            references: components["schemas"]["FiscalReferenceRequest"][];
         };
         /** FiscalLineRequest */
         FiscalLineRequest: {
-            /** Name */
-            name: string;
-            /** Quantity */
-            quantity: number | string;
-            /** Unit Price */
-            unit_price: number | string;
-            tax_category: components["schemas"]["TaxCategory"];
-            price_mode: components["schemas"]["PriceMode"];
-            /** Unit Measure */
-            unit_measure?: string | null;
             /** Description */
             description?: string | null;
-            /**
-             * Discount Percent
-             * @default 0
-             */
-            discount_percent: number | string;
             /**
              * Discount Amount
              * @default 0
              */
             discount_amount: number | string;
             /**
-             * Surcharge Percent
+             * Discount Percent
              * @default 0
              */
-            surcharge_percent: number | string;
+            discount_percent: number | string;
+            /** Name */
+            name: string;
+            price_mode: components["schemas"]["PriceMode"];
+            /** Quantity */
+            quantity: number | string;
             /**
              * Surcharge Amount
              * @default 0
              */
             surcharge_amount: number | string;
+            /**
+             * Surcharge Percent
+             * @default 0
+             */
+            surcharge_percent: number | string;
+            tax_category: components["schemas"]["TaxCategory"];
+            /** Unit Measure */
+            unit_measure?: string | null;
+            /** Unit Price */
+            unit_price: number | string;
         };
         /** FiscalReferenceRequest */
         FiscalReferenceRequest: {
-            /** Line Number */
-            line_number: number;
+            correction_code?: components["schemas"]["CorrectionCode"] | null;
             /** Document Type */
             document_type: string;
             /** Folio */
             folio?: string | null;
             /** Issued On */
             issued_on?: string | null;
-            correction_code?: components["schemas"]["CorrectionCode"] | null;
+            /** Line Number */
+            line_number: number;
             /** Reason */
             reason?: string | null;
         };
@@ -758,68 +758,62 @@ export interface components {
         };
         /** IssueRequest */
         IssueRequest: {
+            /**
+             * Branch Id
+             * @default main
+             */
+            branch_id: string;
+            dispatch_account?: components["schemas"]["DispatchAccount"] | null;
+            dispatch_reason?: components["schemas"]["DispatchReason"] | null;
             /** @default 39 */
             document_type: components["schemas"]["DocumentType"];
+            /** Due On */
+            due_on?: string | null;
             /**
              * Issued On
              * Format: date
              */
             issued_on: string;
             issuer: components["schemas"]["IssuerRequest"];
-            /** Lines */
-            lines: (components["schemas"]["LineRequest"] | components["schemas"]["FiscalLineRequest"])[];
-            /**
-             * Branch Id
-             * @default main
-             */
-            branch_id: string;
             /**
              * Issuer Profile Id
              * @default default
              */
             issuer_profile_id: string;
+            /** Lines */
+            lines: (components["schemas"]["LineRequest"] | components["schemas"]["FiscalLineRequest"])[];
+            payment_terms?: components["schemas"]["PaymentTerms"] | null;
             receiver?: components["schemas"]["PartyRequest"] | null;
-            /**
-             * Receiver Rut
-             * @default 66666666-6
-             */
-            receiver_rut: string;
             /**
              * Receiver Name
              * @default SIN INFORMACION
              */
             receiver_name: string;
-            payment_terms?: components["schemas"]["PaymentTerms"] | null;
-            /** Due On */
-            due_on?: string | null;
-            dispatch_reason?: components["schemas"]["DispatchReason"] | null;
-            dispatch_account?: components["schemas"]["DispatchAccount"] | null;
-            transport?: components["schemas"]["DispatchTransportRequest"] | null;
+            /**
+             * Receiver Rut
+             * @default 66666666-6
+             */
+            receiver_rut: string;
             reference?: components["schemas"]["ReferenceRequest"] | null;
+            transport?: components["schemas"]["DispatchTransportRequest"] | null;
         };
         /** IssuerRequest */
         IssuerRequest: {
-            /** Rut */
-            rut: string;
-            /** Legal Name */
-            legal_name: string;
-            /** Business Activity */
-            business_activity: string;
             /** Activity Code */
             activity_code: number;
             /** Address */
             address?: string | null;
+            /** Business Activity */
+            business_activity: string;
             /** Commune */
             commune?: string | null;
+            /** Legal Name */
+            legal_name: string;
+            /** Rut */
+            rut: string;
         };
         /** LineRequest */
         LineRequest: {
-            /** Name */
-            name: string;
-            /** Quantity */
-            quantity: number | string;
-            /** Unit Price Gross */
-            unit_price_gross: number | string;
             /**
              * Discount Gross
              * @default 0
@@ -830,38 +824,44 @@ export interface components {
              * @default false
              */
             is_exempt: boolean;
+            /** Name */
+            name: string;
+            /** Quantity */
+            quantity: number | string;
             /** Unit Measure */
             unit_measure?: string | null;
+            /** Unit Price Gross */
+            unit_price_gross: number | string;
         };
         /** OperationalAlertResponse */
         OperationalAlertResponse: {
             /** Code */
             code: string;
-            /** Severity */
-            severity: string;
             /** Message */
             message: string;
             /** Resource Id */
             resource_id: string | null;
+            /** Severity */
+            severity: string;
         };
         /** PartyRequest */
         PartyRequest: {
-            /** Rut */
-            rut: string;
-            /** Legal Name */
-            legal_name: string;
-            /** Business Activity */
-            business_activity?: string | null;
             /** Address */
             address?: string | null;
-            /** Commune */
-            commune?: string | null;
+            /** Business Activity */
+            business_activity?: string | null;
             /** City */
             city?: string | null;
+            /** Commune */
+            commune?: string | null;
             /** Email */
             email?: string | null;
+            /** Legal Name */
+            legal_name: string;
             /** Phone */
             phone?: string | null;
+            /** Rut */
+            rut: string;
         };
         /**
          * PaymentMethod
@@ -890,32 +890,32 @@ export interface components {
         PurchaseDestination: "expense" | "inventory" | "fixed_asset";
         /** PurchaseLineAllocationRequest */
         PurchaseLineAllocationRequest: {
-            /** Line Number */
-            line_number: number;
-            destination: components["schemas"]["PurchaseDestination"];
             /** Control Plane Ref */
             control_plane_ref?: string | null;
+            destination: components["schemas"]["PurchaseDestination"];
+            /** Line Number */
+            line_number: number;
         };
         /** RcvDifferenceResponse */
         RcvDifferenceResponse: {
-            /** Kind */
-            kind: string;
-            /** Issuer Rut */
-            issuer_rut: string;
             /** Document Type */
             document_type: number;
             /** Folio */
             folio: number;
-            /** Xml Total */
-            xml_total: number | null;
+            /** Issuer Rut */
+            issuer_rut: string;
+            /** Kind */
+            kind: string;
             /** Rcv Total */
             rcv_total: number | null;
+            /** Xml Total */
+            xml_total: number | null;
         };
         /** RcvEntryRequest */
         RcvEntryRequest: {
-            /** Issuer Rut */
-            issuer_rut: string;
             document_type: components["schemas"]["DocumentType"];
+            /** Exempt Amount */
+            exempt_amount: number;
             /** Folio */
             folio: number;
             /**
@@ -923,26 +923,26 @@ export interface components {
              * Format: date
              */
             issued_on: string;
-            /** Exempt Amount */
-            exempt_amount: number;
+            /** Issuer Rut */
+            issuer_rut: string;
             /** Net Amount */
             net_amount: number;
-            /** Vat Amount */
-            vat_amount: number;
+            status: components["schemas"]["RcvPurchaseStatus"];
             /** Total Amount */
             total_amount: number;
-            status: components["schemas"]["RcvPurchaseStatus"];
+            /** Vat Amount */
+            vat_amount: number;
         };
         /** RcvImportRequest */
         RcvImportRequest: {
-            /** Year */
-            year: number;
+            /** Entries */
+            entries: components["schemas"]["RcvEntryRequest"][];
             /** Month */
             month: number;
             /** Source */
             source: string;
-            /** Entries */
-            entries: components["schemas"]["RcvEntryRequest"][];
+            /** Year */
+            year: number;
         };
         /**
          * RcvPurchaseStatus
@@ -953,48 +953,48 @@ export interface components {
         RcvSnapshotResponse: {
             /** Id */
             id: string;
-            /** Period */
-            period: string;
-            /** Version */
-            version: number;
-            /** Source */
-            source: string;
-            /** Payload Sha256 */
-            payload_sha256: string;
             /** Imported At */
             imported_at: string;
+            /** Payload Sha256 */
+            payload_sha256: string;
+            /** Period */
+            period: string;
+            /** Source */
+            source: string;
+            /** Version */
+            version: number;
         };
         /** ReceivedClassificationRequest */
         ReceivedClassificationRequest: {
-            /** Provider Id */
-            provider_id?: string | null;
-            /** Destination */
-            destination: string;
             /** Category Code */
             category_code?: string | null;
+            /** Destination */
+            destination: string;
             /** Notes */
             notes?: string | null;
+            /** Provider Id */
+            provider_id?: string | null;
         };
         /** ReceivedClassificationResponse */
         ReceivedClassificationResponse: {
-            /** Id */
-            id: string;
-            /** Received Document Id */
-            received_document_id: string;
-            /** Version */
-            version: number;
-            /** Provider Id */
-            provider_id: string | null;
-            /** Destination */
-            destination: string;
             /** Category Code */
             category_code: string | null;
-            /** Notes */
-            notes: string | null;
             /** Classified By */
             classified_by: string;
             /** Created At */
             created_at: string;
+            /** Destination */
+            destination: string;
+            /** Id */
+            id: string;
+            /** Notes */
+            notes: string | null;
+            /** Provider Id */
+            provider_id: string | null;
+            /** Received Document Id */
+            received_document_id: string;
+            /** Version */
+            version: number;
         };
         /** ReceivedDecisionRequest */
         ReceivedDecisionRequest: {
@@ -1004,22 +1004,22 @@ export interface components {
         };
         /** ReceivedDecisionResponse */
         ReceivedDecisionResponse: {
-            /** Id */
-            id: string;
-            /** Received Document Id */
-            received_document_id: string;
+            /** Created At */
+            created_at: string;
             /** Decision */
             decision: string;
+            /** Id */
+            id: string;
             /** Reason */
             reason: string | null;
-            /** Status */
-            status: string;
+            /** Received Document Id */
+            received_document_id: string;
             /** Remote Code */
             remote_code: string | null;
             /** Remote Message */
             remote_message: string | null;
-            /** Created At */
-            created_at: string;
+            /** Status */
+            status: string;
             /** Updated At */
             updated_at: string;
         };
@@ -1030,30 +1030,30 @@ export interface components {
         ReceivedDecisionType: "accept_content" | "ack_receipt" | "claim_content" | "claim_partial_delivery" | "claim_total_delivery";
         /** ReceivedDocumentResponse */
         ReceivedDocumentResponse: {
-            /** Id */
-            id: string;
-            /** Issuer Rut */
-            issuer_rut: string;
-            /** Issuer Name */
-            issuer_name: string;
             /** Document Type */
             document_type: number;
             /** Folio */
             folio: number;
+            /** Id */
+            id: string;
             /** Issued On */
             issued_on: string;
-            /** Total */
-            total: number;
-            /** Status */
-            status: string;
-            /** Source */
-            source: string;
-            /** Xml Sha256 */
-            xml_sha256: string;
-            /** Sii Received At */
-            sii_received_at: string | null;
+            /** Issuer Name */
+            issuer_name: string;
+            /** Issuer Rut */
+            issuer_rut: string;
             /** Received At */
             received_at: string;
+            /** Sii Received At */
+            sii_received_at: string | null;
+            /** Source */
+            source: string;
+            /** Status */
+            status: string;
+            /** Total */
+            total: number;
+            /** Xml Sha256 */
+            xml_sha256: string;
         };
         /** ReferenceRequest */
         ReferenceRequest: {
@@ -1069,30 +1069,30 @@ export interface components {
         TaxCategory: "affected" | "exempt" | "non_billable";
         /** TextCorrectionRequest */
         TextCorrectionRequest: {
+            /** Address */
+            address: string;
+            /** Business Activity */
+            business_activity: string;
+            /** Commune */
+            commune: string;
             /**
              * Issued On
              * Format: date
              */
             issued_on: string;
-            /** Business Activity */
-            business_activity: string;
-            /** Address */
-            address: string;
-            /** Commune */
-            commune: string;
         };
         /** ValidationError */
         ValidationError: {
+            /** Context */
+            ctx?: Record<string, never>;
+            /** Input */
+            input?: unknown;
             /** Location */
             loc: (string | number)[];
             /** Message */
             msg: string;
             /** Error Type */
             type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
         };
     };
     responses: never;
@@ -1125,6 +1125,68 @@ export interface operations {
             };
         };
     };
+    public_receipt_page_public_v1_boletas__public_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    public_receipt_pdf_public_v1_boletas__public_id__pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     capabilities_v1_capabilities_get: {
         parameters: {
             query?: never;
@@ -1145,6 +1207,39 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_fiscal_delivery_v1_fiscal_deliveries__delivery_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                delivery_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1296,7 +1391,7 @@ export interface operations {
             };
         };
     };
-    issue_amount_correction_v1_fiscal_documents__record_id__corrections_post: {
+    annul_fiscal_document_v1_fiscal_documents__record_id__annulment_post: {
         parameters: {
             query?: never;
             header?: {
@@ -1310,7 +1405,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CorrectionIssueRequest"];
+                "application/json": components["schemas"]["AnnulmentRequest"];
             };
         };
         responses: {
@@ -1334,7 +1429,7 @@ export interface operations {
             };
         };
     };
-    annul_fiscal_document_v1_fiscal_documents__record_id__annulment_post: {
+    issue_amount_correction_v1_fiscal_documents__record_id__corrections_post: {
         parameters: {
             query?: never;
             header?: {
@@ -1348,7 +1443,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AnnulmentRequest"];
+                "application/json": components["schemas"]["CorrectionIssueRequest"];
             };
         };
         responses: {
@@ -1410,6 +1505,109 @@ export interface operations {
             };
         };
     };
+    queue_invoice_delivery_v1_fiscal_documents__record_id__deliveries_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeliveryRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_events_v1_fiscal_documents__record_id__events_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_pdf_v1_fiscal_documents__record_id__pdf_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_document_xml_v1_fiscal_documents__record_id__xml_get: {
         parameters: {
             query?: never;
@@ -1443,10 +1641,10 @@ export interface operations {
             };
         };
     };
-    import_received_document_v1_received_documents_import_post: {
+    list_fiscal_envelopes_v1_fiscal_envelopes_get: {
         parameters: {
             query?: {
-                source?: string;
+                limit?: number;
             };
             header?: {
                 authorization?: string | null;
@@ -1457,12 +1655,184 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvelopeResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    operational_alerts_v1_operational_alerts_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationalAlertResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_rcv_snapshot_v1_rcv_purchases_snapshots_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RcvImportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReceivedDocumentResponse"];
+                    "application/json": components["schemas"]["RcvSnapshotResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconcile_rcv_snapshot_v1_rcv_purchases__year___month__reconciliation_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                year: number;
+                month: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RcvDifferenceResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    allocate_received_lines_v1_received_classifications__classification_id__line_allocations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                classification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PurchaseAllocationsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconcile_received_decision_v1_received_decisions__decision_id__reconcile_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                decision_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceivedDecisionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1511,22 +1881,18 @@ export interface operations {
             };
         };
     };
-    decide_received_document_v1_received_documents__record_id__decision_post: {
+    import_received_document_v1_received_documents_import_post: {
         parameters: {
-            query?: never;
+            query?: {
+                source?: string;
+            };
             header?: {
                 authorization?: string | null;
             };
-            path: {
-                record_id: string;
-            };
+            path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReceivedDecisionRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             201: {
@@ -1534,40 +1900,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReceivedDecisionResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    reconcile_received_decision_v1_received_decisions__decision_id__reconcile_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                decision_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReceivedDecisionResponse"];
+                    "application/json": components["schemas"]["ReceivedDocumentResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1652,20 +1985,20 @@ export interface operations {
             };
         };
     };
-    allocate_received_lines_v1_received_classifications__classification_id__line_allocations_post: {
+    decide_received_document_v1_received_documents__record_id__decision_post: {
         parameters: {
             query?: never;
             header?: {
                 authorization?: string | null;
             };
             path: {
-                classification_id: string;
+                record_id: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PurchaseAllocationsRequest"];
+                "application/json": components["schemas"]["ReceivedDecisionRequest"];
             };
         };
         responses: {
@@ -1675,78 +2008,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    import_rcv_snapshot_v1_rcv_purchases_snapshots_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RcvImportRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RcvSnapshotResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    reconcile_rcv_snapshot_v1_rcv_purchases__year___month__reconciliation_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                year: number;
-                month: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RcvDifferenceResponse"][];
+                    "application/json": components["schemas"]["ReceivedDecisionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1761,40 +2023,6 @@ export interface operations {
         };
     };
     export_monthly_csv_v1_reports_monthly__year___month__csv_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                year: number;
-                month: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    export_monthly_xlsx_v1_reports_monthly__year___month__xlsx_get: {
         parameters: {
             query?: never;
             header?: {
@@ -1862,7 +2090,7 @@ export interface operations {
             };
         };
     };
-    export_accountant_package_v1_reports_monthly__year___month__accountant_package_zip_get: {
+    export_monthly_xlsx_v1_reports_monthly__year___month__xlsx_get: {
         parameters: {
             query?: never;
             header?: {
@@ -1896,243 +2124,15 @@ export interface operations {
             };
         };
     };
-    get_document_events_v1_fiscal_documents__record_id__events_get: {
+    export_accountant_package_v1_reports_monthly__year___month__accountant_package_zip_get: {
         parameters: {
             query?: never;
             header?: {
                 authorization?: string | null;
             };
             path: {
-                record_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EventResponse"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_document_pdf_v1_fiscal_documents__record_id__pdf_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                record_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    queue_invoice_delivery_v1_fiscal_documents__record_id__deliveries_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                record_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DeliveryRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DeliveryResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_fiscal_delivery_v1_fiscal_deliveries__delivery_id__get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                delivery_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DeliveryResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_fiscal_envelopes_v1_fiscal_envelopes_get: {
-        parameters: {
-            query?: {
-                limit?: number;
-            };
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EnvelopeResponse"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    operational_alerts_v1_operational_alerts_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OperationalAlertResponse"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    public_receipt_page_public_v1_boletas__public_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                public_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/html": string;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    public_receipt_pdf_public_v1_boletas__public_id__pdf_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                public_id: string;
+                year: number;
+                month: number;
             };
             cookie?: never;
         };
