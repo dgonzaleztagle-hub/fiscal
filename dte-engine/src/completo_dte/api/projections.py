@@ -1,7 +1,7 @@
 """Proyecciones HTTP desde registros fiscales inmutables."""
 
-from lxml import etree
 from fastapi import Request
+from lxml import etree
 
 from completo_dte.domain import DocumentType
 from completo_dte.infrastructure import FiscalDeliveryRecord, FiscalDocumentRecord

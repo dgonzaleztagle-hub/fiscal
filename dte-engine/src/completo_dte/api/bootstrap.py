@@ -1,8 +1,8 @@
 """Bootstrap operacional de un tenant para el servidor local."""
 
+import os
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
-import os
 from pathlib import Path
 
 from completo_dte.application import IssueBoletaService

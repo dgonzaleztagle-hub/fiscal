@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import base64
+import re
+import tempfile
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
-import re
-import tempfile
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
@@ -21,8 +21,8 @@ from completo_dte.domain import (
     CafAuthenticityValidator,
     CafLoader,
     Issuer,
-    SiiCertificateStore,
     SigningCredential,
+    SiiCertificateStore,
 )
 from completo_dte.infrastructure import FolioLedger
 from completo_dte.presentation import ReceiptConfig

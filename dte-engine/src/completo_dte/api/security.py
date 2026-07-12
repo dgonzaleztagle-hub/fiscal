@@ -1,9 +1,9 @@
 """Autenticación tenant-first de la frontera HTTP."""
 
-from collections.abc import Callable
-from dataclasses import dataclass
 import hashlib
 import hmac
+from collections.abc import Callable
+from dataclasses import dataclass
 
 from fastapi import Header, HTTPException, status
 
