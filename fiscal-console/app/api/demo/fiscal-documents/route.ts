@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { DEMO_COOKIE, currentDemoSessionId, issueSyntheticDocument, loadDemoState, newDemoSessionId, saveDemoState } from "@/lib/demo-store";
+import { DEMO_COOKIE, currentDemoSessionId, issueSyntheticDocument, loadDemoState, newDemoSessionId, saveDemoState, type DemoIssueInput } from "@/lib/demo-store";
 
 export async function POST(request: NextRequest) {
   try {
-    const input = await request.json() as { documentType: number; receiver: string; itemName: string; quantity: number; unitPrice: number };
+    const input = await request.json() as DemoIssueInput;
     const sessionId = await currentDemoSessionId() ?? newDemoSessionId();
     const result = issueSyntheticDocument(await loadDemoState(sessionId), input);
     await saveDemoState(sessionId, result.state);

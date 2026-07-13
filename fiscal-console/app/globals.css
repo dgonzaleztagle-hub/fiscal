@@ -588,7 +588,8 @@ a { color: inherit; text-decoration: none; }
 .cash-weeks article > b { text-align:right; }.positive { color:var(--success); }.negative { color:#b24646; }
 @media (max-width: 700px) {
   .commercial-list > article,.commercial-page .commercial-list:has(.stock-icon) > article { grid-template-columns:70px minmax(0,1fr) auto; }
-  .commercial-list article > b,.commercial-list article > span:not(.commercial-code):not(.stock-icon) { display:none; }
+  .commercial-list article > span:not(.commercial-code):not(.stock-icon) { display:none; }
+  .commercial-list article > b { display:block; grid-column:3; grid-row:1 / span 2; align-self:center; }
   .commercial-list article > em { grid-column:2; width:max-content; }
   .cash-weeks > article { grid-template-columns:1fr auto; }
   .cash-weeks > article span { display:none; }

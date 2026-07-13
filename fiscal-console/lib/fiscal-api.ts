@@ -1,7 +1,7 @@
 import "server-only";
 import type { components } from "./api.generated";
 import type { DemoDocument } from "./demo-data";
-import { demoBackendConfigured, loadDemoState } from "./demo-store";
+import { loadDemoState } from "./demo-store";
 
 type DocumentResponse = components["schemas"]["DocumentResponse"];
 type EventResponse = components["schemas"]["EventResponse"];
@@ -27,12 +27,12 @@ export type FiscalDocumentDetail = DemoDocument & {
   warning?: string;
 };
 
-export type EngineSectionResult<T> = { data: T | null; source: "engine" | "demo"; warning?: string };
+export type EngineSectionResult<T> = { data: T | null; source: "engine" | "sandbox" | "demo"; warning?: string };
 
 export async function fiscalSection<T>(path: string): Promise<EngineSectionResult<T>> {
   const baseUrl = process.env.FISCAL_API_URL;
   const token = process.env.FISCAL_API_TOKEN;
-  if (!baseUrl || !token) return { data: await sandboxSection<T>(path), source: "demo" };
+  if (!baseUrl || !token) return { data: await sandboxSection<T>(path), source: "sandbox" };
   try {
     const response = await engineFetch(path, baseUrl, token);
     if (response.status === 404) return { data: null, source: "engine" };
@@ -48,7 +48,7 @@ export async function fiscalDocuments(limit?: number): Promise<FiscalDocumentsRe
   const token = process.env.FISCAL_API_TOKEN;
   if (!baseUrl || !token) {
     const state = await loadDemoState();
-    return { rows: slice(state.documents, limit), source: demoBackendConfigured() ? "sandbox" : "demo" };
+    return { rows: slice(state.documents, limit), source: "sandbox" };
   }
   try {
     const url = new URL("/v1/fiscal-documents", baseUrl);
@@ -68,7 +68,7 @@ export async function fiscalDocuments(limit?: number): Promise<FiscalDocumentsRe
     const state = await loadDemoState();
     return {
       rows: slice(state.documents, limit),
-      source: demoBackendConfigured() ? "sandbox" : "demo",
+      source: "sandbox",
       warning: error instanceof Error ? error.message : "Motor no disponible",
     };
   }
@@ -125,7 +125,7 @@ async function demoDetail(id: string): Promise<FiscalDocumentDetail | null> {
   if (!document) return null;
   return {
     ...document,
-    source: demoBackendConfigured() ? "sandbox" : "demo",
+    source: "sandbox",
   };
 }
 
@@ -140,8 +140,23 @@ function slice(rows: DemoDocument[], limit?: number) {
 }
 
 async function sandboxSection<T>(path: string): Promise<T | null> {
+  const state = await loadDemoState();
+  if (path.startsWith("/v1/commercial-documents")) {
+    const kind = new URL(path, "http://sandbox.local").searchParams.get("kind");
+    return state.commercialDocuments.filter(row => !kind || row.kind === kind) as T;
+  }
+  if (path === "/v1/inventory/products") return state.inventoryProducts as T;
+  if (path.startsWith("/v1/obligations")) return state.obligations as T;
+  if (path.startsWith("/v1/recurring-agreements")) return state.activities.filter(item => item.area === "recurring").map(item => ({ id: item.id, counterparty_name: String(item.payload.counterparty_name || "Cliente demo"), description: String(item.payload.description || "Servicio recurrente"), amount: Number(item.payload.amount || 0), day_of_month: Number(item.payload.day_of_month || 15), next_run_on: String(item.payload.next_run_on || "2026-08-15"), active: 1 })) as T;
+  if (path.startsWith("/v1/approvals")) return [] as T;
+  if (path.startsWith("/v1/cash-flow/projection")) {
+    if (!state.obligations.length) return null;
+    const incoming = state.obligations.filter(row => row.direction === "receivable").reduce((sum, row) => sum + row.amount - row.paid, 0);
+    const outgoing = state.obligations.filter(row => row.direction === "payable").reduce((sum, row) => sum + row.amount - row.paid, 0);
+    return { incoming, outgoing, net: incoming - outgoing, from_on: "2026-07-13", to_on: "2026-08-09" } as T;
+  }
   if (!path.includes("/close/snapshots")) return null;
-  const documents = (await loadDemoState()).documents;
+  const documents = state.documents;
   const sign = (kind: string) => kind === "61" ? -1 : 1;
   const salesDocuments = documents.filter(row => ["33", "34", "39", "41", "61"].includes(row.kind));
   const salesTotal = salesDocuments.reduce((sum, row) => sum + sign(row.kind) * row.amount, 0);

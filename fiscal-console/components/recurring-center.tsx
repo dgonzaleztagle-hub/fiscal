@@ -2,7 +2,7 @@
 import {useState} from "react";
 import {Plus,Repeat2} from "lucide-react";
 type Agreement={id:string;counterparty_name:string;description:string;amount:number;day_of_month:number;next_run_on:string;active:number};
-export function RecurringCenter({initial,source}:{initial:Agreement[];source:"engine"|"demo"}){
+export function RecurringCenter({initial,source}:{initial:Agreement[];source:"engine"|"sandbox"|"demo"}){
  const[rows,setRows]=useState(initial),[open,setOpen]=useState(false),[name,setName]=useState(""),[description,setDescription]=useState(""),[amount,setAmount]=useState(0);
  async function submit(e:React.FormEvent){
   e.preventDefault();const payload={branch_id:"main",counterparty_ref:`manual:${name}`,counterparty_name:name,description,amount,day_of_month:15,next_run_on:"2026-08-15"};

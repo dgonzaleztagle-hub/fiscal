@@ -159,3 +159,62 @@ test("una boleta sandbox pasa por backend y queda visible", async ({ page }) => 
   await page.goto("/f29");
   await expect(page.locator(".summary-card").filter({ hasText: "Débito fiscal" })).toContainText("$77.230");
 });
+
+test("correcciones y representaciones sandbox atraviesan el backend", async ({ page }) => {
+  await page.goto("/emitir/correccion");
+  await page.getByLabel("Documento original").fill("FACTURA 33 · FOLIO 9001");
+  await page.getByLabel("Motivo").fill("Anulación de ensayo policial");
+  await page.getByRole("button", { name: "Emitir corrección en sandbox" }).click();
+  await expect(page.getByText(/Nota de crédito electrónica · folio/)).toBeVisible();
+  await page.getByRole("link", { name: "Ver documento" }).click();
+  await expect(page.getByText("Backend sandbox · documento sintético persistido")).toBeVisible();
+  const xmlHref = await page.getByRole("link", { name: /Descargar XML/ }).getAttribute("href");
+  const pdfHref = await page.getByRole("link", { name: /Abrir PDF/ }).getAttribute("href");
+  const xml = await page.request.get(xmlHref!);
+  const pdf = await page.request.get(pdfHref!);
+  expect(xml.ok()).toBeTruthy();
+  expect(await xml.text()).toContain("NO_VALIDO_COMO_DTE=\"true\"");
+  expect(pdf.ok()).toBeTruthy();
+  expect(pdf.headers()["content-type"]).toContain("application/pdf");
+});
+
+test("una guía validada se emite y persiste en sandbox", async ({ page }) => {
+  await page.goto("/emitir/guia");
+  await page.getByLabel("Razón social").fill("CLIENTE LOGÍSTICO DEMO SPA");
+  await page.getByRole("button", { name: "Validar borrador" }).click();
+  await page.getByRole("button", { name: "Emitir guía en sandbox" }).click();
+  await expect(page.getByText(/Guía folio .* emitida/)).toBeVisible();
+  await page.getByRole("link", { name: "Ver documento" }).click();
+  await expect(page.getByRole("heading", { name: "Guía de despacho electrónica" })).toBeVisible();
+});
+
+test("cotización, inventario y caja se reflejan desde backend sandbox", async ({ page }) => {
+  await page.goto("/ventas/nueva");
+  await page.getByRole("textbox", { name: "Cliente", exact: true }).fill("CLIENTE POLICÍA SPA");
+  await page.getByRole("textbox", { name: "Producto o servicio", exact: true }).fill("Auditoría integral");
+  await page.getByRole("spinbutton", { name: "Monto total CLP", exact: true }).fill("321000");
+  await page.getByRole("button", { name: "Guardar borrador" }).click();
+  await expect(page.getByText("Persistido en el backend sandbox; aparecerá al volver al listado.")).toBeVisible();
+  await page.getByRole("link", { name: "Volver" }).click();
+  await expect(page.getByText("CLIENTE POLICÍA SPA")).toBeVisible();
+  await expect(page.getByText("$321.000")).toBeVisible();
+
+  await page.goto("/inventario/movimiento");
+  await page.getByLabel("ID del producto").fill("CAFÉ-POLICIA");
+  await page.getByRole("spinbutton", { name: "Cantidad", exact: true }).fill("12");
+  await page.getByLabel("Motivo").fill("Compra de ensayo");
+  await page.getByRole("button", { name: "Registrar" }).click();
+  await expect(page.getByText("Persistido en el backend sandbox y reflejado en inventario.")).toBeVisible();
+  await page.getByRole("link", { name: "Volver" }).click();
+  await expect(page.getByText("CAFÉ-POLICIA")).toBeVisible();
+  await expect(page.getByText("12 un.")).toBeVisible();
+
+  await page.goto("/caja/obligacion");
+  await page.getByLabel("Cliente o proveedor").fill("COBRO DE PRUEBA SPA");
+  await page.getByLabel("Documento de origen").fill("COT-TEST");
+  await page.getByRole("spinbutton", { name: "Monto", exact: true }).fill("123456");
+  await page.getByRole("button", { name: "Guardar" }).click();
+  await expect(page.getByText("Persistido en el backend sandbox y aislado en esta sesión.")).toBeVisible();
+  await page.getByRole("link", { name: "Volver" }).click();
+  await expect(page.locator(".projection-banner")).toContainText("$123.456");
+});
