@@ -11,7 +11,20 @@ const criticalRoutes = [
   ["/expediente", "Todo lo que respalda este mes"],
   ["/pagos", "Vouchers y ventas, sin duplicar boletas"],
   ["/f29", "Propuesta F29 · julio 2026"],
+  ["/proveedores", "Proveedores y respaldo"],
+  ["/folios", "Folios y CAF bajo control"],
+  ["/envios", "Envíos y seguimiento"],
 ] as const;
+
+test("inicio ofrece un recorrido contable completo", async ({ page }) => {
+  await page.goto("/dashboard");
+  const review = page.getByRole("region", { name: "Recorrido recomendado para contador" });
+  await expect(review.getByText("Recorrido preparado para tu contador")).toBeVisible();
+  await expect(review.getByRole("link", { name: /RCV/ })).toHaveAttribute("href", "/rcv");
+  await expect(review.getByRole("link", { name: /F29 explicado/ })).toHaveAttribute("href", "/f29");
+  await expect(review.getByRole("link", { name: /Cierre/ })).toHaveAttribute("href", "/cierre");
+  await expect(review.getByRole("link", { name: /Expediente/ })).toHaveAttribute("href", "/expediente");
+});
 
 test("el ciclo comercial distingue sus documentos de un DTE", async ({ page }) => {
   await page.goto("/ventas");

@@ -15,6 +15,7 @@ import { CommercialCenter } from "./commercial-center";
 import { ApprovalsCenter } from "./approvals-center";
 import { RecurringCenter } from "./recurring-center";
 import { fiscalSection } from "@/lib/fiscal-api";
+import { FolioControl, ProvidersSection, SubmissionTracking } from "./operational-sections";
 
 const issueOptions = [
   { code: "39 / 41", title: "Registrar una venta", detail: "Boleta afecta o exenta según los productos.", icon: Receipt, ready: true },
@@ -45,6 +46,9 @@ export async function SectionContent({ section }: { section: NavigationSection }
   if (section === "configuracion") return <Onboarding />;
   if (section === "clientes") return <ClientsSection />;
   if (section === "productos") return <ProductsSection />;
+  if (section === "proveedores") return <ProvidersSection />;
+  if (section === "folios") return <FolioControl />;
+  if (section === "envios") return <SubmissionTracking />;
   if (section === "certificacion") return <CertificationSection content={content} />;
   return (
     <div className="page section-page"><header className="page-header"><div><p className="eyebrow">{content.eyebrow}</p><h1>{content.title}</h1><p>{content.description}</p></div><button className="secondary-button" type="button"><Search size={17} /> Buscar</button></header><section className="panel empty-state"><span><BookOpenCheck size={28} /></span><h2>Esta área ya tiene un lugar definitivo</h2><p>El contrato y la navegación están listos. Se activará con datos reales en su hito documental, manteniendo la misma experiencia.</p><div className="progress-line"><i /><i /><i /><i /></div><small>Modo demostración · Sin efectos tributarios</small></section>
