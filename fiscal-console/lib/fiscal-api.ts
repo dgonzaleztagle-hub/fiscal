@@ -26,6 +26,22 @@ export type FiscalDocumentDetail = DemoDocument & {
   warning?: string;
 };
 
+export type EngineSectionResult<T> = { data: T | null; source: "engine" | "demo"; warning?: string };
+
+export async function fiscalSection<T>(path: string): Promise<EngineSectionResult<T>> {
+  const baseUrl = process.env.FISCAL_API_URL;
+  const token = process.env.FISCAL_API_TOKEN;
+  if (!baseUrl || !token) return { data: null, source: "demo" };
+  try {
+    const response = await engineFetch(path, baseUrl, token);
+    if (response.status === 404) return { data: null, source: "engine" };
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return { data: await response.json() as T, source: "engine" };
+  } catch (error) {
+    return { data: null, source: "demo", warning: error instanceof Error ? error.message : "Motor no disponible" };
+  }
+}
+
 export async function fiscalDocuments(limit?: number): Promise<FiscalDocumentsResult> {
   const baseUrl = process.env.FISCAL_API_URL;
   const token = process.env.FISCAL_API_TOKEN;

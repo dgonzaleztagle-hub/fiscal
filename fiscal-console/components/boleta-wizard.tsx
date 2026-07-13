@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, Info, ShieldCheck } from "lucide-react";
 
 export function BoletaWizard() {
@@ -10,6 +10,28 @@ export function BoletaWizard() {
   const [price, setPrice] = useState(12990);
   const [exempt, setExempt] = useState(false);
   const [validated, setValidated] = useState(false);
+  const draftLoaded = useRef(false);
+  useEffect(() => {
+    const stored = window.sessionStorage.getItem("completo-fiscal:boleta-draft");
+    if (stored) {
+      try {
+        const draft = JSON.parse(stored);
+        Promise.resolve().then(() => {
+          setName(draft.name ?? "Menú del día");
+          setQuantity(draft.quantity ?? 1);
+          setPrice(draft.price ?? 12990);
+          setExempt(draft.exempt ?? false);
+        });
+      } catch { window.sessionStorage.removeItem("completo-fiscal:boleta-draft"); }
+    }
+    draftLoaded.current = true;
+  }, []);
+  useEffect(() => {
+    if (!draftLoaded.current) return;
+    window.sessionStorage.setItem(
+      "completo-fiscal:boleta-draft", JSON.stringify({ name, quantity, price, exempt })
+    );
+  }, [name, quantity, price, exempt]);
   const total = useMemo(() => Math.max(0, quantity * price), [quantity, price]);
   const type = exempt ? 41 : 39;
 

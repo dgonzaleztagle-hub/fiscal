@@ -164,3 +164,9 @@ __all__ = [
     "normalize_rut",
     "validate_rut",
 ]
+from .commercial import (
+    CommercialDocument,
+    CommercialDocumentKind,
+    CommercialDocumentStatus,
+    CommercialLine,
+)

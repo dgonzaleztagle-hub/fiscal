@@ -3,6 +3,8 @@ import { SectionContent } from "@/components/section-content";
 import { Shell } from "@/components/shell";
 import { navigationSections, type NavigationSection } from "@/lib/demo-data";
 
+export const dynamic = "force-dynamic";
+
 export function generateStaticParams() {
   return Object.keys(navigationSections).map((section) => ({ section }));
 }

@@ -1,0 +1,2 @@
+CREATE TABLE inventory_minimums(tenant_id TEXT NOT NULL,product_id TEXT NOT NULL REFERENCES inventory_products(id),branch_id TEXT NOT NULL,minimum_quantity TEXT NOT NULL,updated_at TEXT NOT NULL,PRIMARY KEY(tenant_id,product_id,branch_id));
+CREATE TABLE inventory_transfers(id TEXT PRIMARY KEY,tenant_id TEXT NOT NULL,product_id TEXT NOT NULL,from_branch_id TEXT NOT NULL,to_branch_id TEXT NOT NULL,quantity TEXT NOT NULL,actor_ref TEXT NOT NULL,idempotency_key TEXT NOT NULL,created_at TEXT NOT NULL,UNIQUE(tenant_id,idempotency_key));

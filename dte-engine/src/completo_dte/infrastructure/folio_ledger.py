@@ -27,9 +27,27 @@ from .records import (
     LeaseState,
 )
 from .transmission_ledger import TransmissionLedgerMixin
+from .monthly_close_ledger import MonthlyCloseLedgerMixin
+from .payment_ledger import PaymentLedgerMixin
+from .commercial_ledger import CommercialLedgerMixin
+from .inventory_ledger import InventoryLedgerMixin
+from .treasury_ledger import TreasuryLedgerMixin
+from .recurring_ledger import RecurringLedgerMixin
+from .collection_ledger import CollectionLedgerMixin
 
 
-class FolioLedger(DocumentLedgerMixin, ReceivedLedgerMixin, TransmissionLedgerMixin):
+class FolioLedger(
+    DocumentLedgerMixin,
+    ReceivedLedgerMixin,
+    TransmissionLedgerMixin,
+    MonthlyCloseLedgerMixin,
+    PaymentLedgerMixin,
+    CommercialLedgerMixin,
+    InventoryLedgerMixin,
+    TreasuryLedgerMixin,
+    RecurringLedgerMixin,
+    CollectionLedgerMixin,
+):
     def __init__(self, database: str | Path) -> None:
         self._database = str(database)
 

@@ -28,6 +28,12 @@ from .portal_routes import register_public_portal_routes
 from .rcv_routes import register_rcv_routes
 from .received_routes import register_received_routes
 from .report_routes import register_report_routes
+from .payment_routes import register_payment_routes
+from .commercial_routes import register_commercial_routes
+from .treasury_routes import register_treasury_routes
+from .inventory_routes import register_inventory_routes
+from .recurring_routes import register_recurring_routes
+from .collection_routes import register_collection_routes
 from .security import build_authenticator
 
 
@@ -57,7 +63,18 @@ def create_app(
         docs_url=None,
         redoc_url=None,
     )
-    register_report_routes(app=app, ledger=ledger, authenticate=authenticate)
+    register_report_routes(
+        app=app,
+        ledger=ledger,
+        authenticate=authenticate,
+        rcv_repository=rcv_repository,
+    )
+    register_payment_routes(app=app, ledger=ledger, authenticate=authenticate)
+    register_commercial_routes(app=app, ledger=ledger, authenticate=authenticate)
+    register_treasury_routes(app=app, ledger=ledger, authenticate=authenticate)
+    register_inventory_routes(app=app, ledger=ledger, authenticate=authenticate)
+    register_recurring_routes(app=app, ledger=ledger, authenticate=authenticate)
+    register_collection_routes(app=app, ledger=ledger, authenticate=authenticate)
     register_rcv_routes(
         app=app,
         authenticate=authenticate,

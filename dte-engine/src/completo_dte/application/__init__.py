@@ -38,6 +38,29 @@ from .monthly_report import (
     MonthlyFiscalReport,
     MonthlyReportBuilder,
 )
+from .monthly_close import (
+    CloseDifferenceState,
+    MonthlyCloseCalculator,
+    MonthlyCloseInputs,
+    MonthlyCloseLine,
+    MonthlyCloseSnapshot,
+)
+from .monthly_dossier import (
+    EvidenceItem,
+    EvidenceState,
+    MonthlyDossier,
+    MonthlyDossierBuilder,
+)
+from .payment_reconciliation import (
+    ElectronicPayment,
+    PaymentMatchState,
+    PaymentReconciliation,
+    PaymentReconciliationItem,
+    PaymentReconciliationService,
+    SalePaymentExpectation,
+    SiiEmissionModel,
+)
+from .people_summary import PeopleMonthlySummary
 from .sso import OneTimeSsoService, SsoError
 from .accountant_package import AccountantPackage, AccountantPackageBuilder
 from .submit_boleta_envelope import (
@@ -83,6 +106,23 @@ __all__ = [
     "MonthlyDocumentRow",
     "MonthlyFiscalReport",
     "MonthlyReportBuilder",
+    "CloseDifferenceState",
+    "MonthlyCloseCalculator",
+    "MonthlyCloseInputs",
+    "MonthlyCloseLine",
+    "MonthlyCloseSnapshot",
+    "EvidenceItem",
+    "EvidenceState",
+    "MonthlyDossier",
+    "MonthlyDossierBuilder",
+    "ElectronicPayment",
+    "PaymentMatchState",
+    "PaymentReconciliation",
+    "PaymentReconciliationItem",
+    "PaymentReconciliationService",
+    "SalePaymentExpectation",
+    "SiiEmissionModel",
+    "PeopleMonthlySummary",
     "OneTimeSsoService",
     "SsoError",
     "AccountantPackage",

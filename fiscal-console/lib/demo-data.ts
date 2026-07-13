@@ -71,6 +71,43 @@ export const demoDocuments: DemoDocument[] = [
 ];
 
 export const navigationSections = {
+  recurrencia:{eyebrow:"Automatización controlada",title:"Acuerdos mensuales",description:"Crea borradores recurrentes sin emitir a ciegas."},
+  aprobaciones: { eyebrow:"Control interno",title:"Aprobaciones",description:"Decide compras, pagos y acciones sensibles con trazabilidad." },
+  ventas: {
+    eyebrow: "Ciclo comercial",
+    title: "Ventas y cotizaciones",
+    description: "Desde la propuesta al documento tributario, sin volver a ingresar información.",
+  },
+  compras: {
+    eyebrow: "Abastecimiento",
+    title: "Órdenes de compra",
+    description: "Solicita, aprueba y relaciona cada compra con su recepción, factura y pago.",
+  },
+  inventario: {
+    eyebrow: "Existencias",
+    title: "Inventario",
+    description: "Entradas, salidas y alertas explicables por sucursal.",
+  },
+  caja: {
+    eyebrow: "Tesorería simple",
+    title: "Caja proyectada",
+    description: "Anticipa cobros, pagos y semanas estrechas sin confundir proyección con saldo bancario.",
+  },
+  pagos: {
+    eyebrow: "Pagos electrónicos",
+    title: "Pagos y vouchers",
+    description: "Concilia cobros, ventas y respaldo tributario sin duplicar documentos.",
+  },
+  expediente: {
+    eyebrow: "Evidencia mensual",
+    title: "Expediente mensual",
+    description: "Reúne fuentes, faltantes y archivos verificables del período.",
+  },
+  cierre: {
+    eyebrow: "Operación fiscal",
+    title: "Cierre mensual",
+    description: "Concilia las fuentes del período y prepara una versión revisable.",
+  },
   emitir: {
     eyebrow: "Emisión guiada",
     title: "¿Qué documento necesitas emitir?",

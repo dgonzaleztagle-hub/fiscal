@@ -11,6 +11,7 @@ from completo_dte.infrastructure import (
     ReceivedFiscalDocumentRecord,
 )
 from .monthly_report import MonthlyFiscalReport, MonthlyReportBuilder
+from .monthly_dossier import MonthlyDossier
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,7 @@ class AccountantPackageBuilder:
         report: MonthlyFiscalReport,
         outgoing: list[FiscalDocumentRecord],
         received: list[ReceivedFiscalDocumentRecord],
+        dossier: MonthlyDossier | None = None,
     ) -> AccountantPackage:
         reports = MonthlyReportBuilder()
         artifacts = [reports.csv(report), reports.xlsx(report), reports.pdf(report)]
@@ -41,8 +43,31 @@ class AccountantPackageBuilder:
             files[
                 f"xml/compras/{record.document_type}-{record.folio}-{record.xml_sha256[:12]}.xml"
             ] = record.signed_xml
+        if dossier is not None:
+            dossier_payload = {
+                "period": dossier.period,
+                "ready": dossier.ready,
+                "ready_count": dossier.ready_count,
+                "evidence_hash": dossier.evidence_hash,
+                "items": [
+                    {
+                        "code": item.code,
+                        "label": item.label,
+                        "state": item.state.value,
+                        "detail": item.detail,
+                        "source_ref": item.source_ref,
+                        "source_sha256": item.source_sha256,
+                    }
+                    for item in dossier.items
+                ],
+            }
+            files["expediente/expediente.json"] = (
+                json.dumps(dossier_payload, ensure_ascii=False, sort_keys=True, indent=2)
+                + "\n"
+            ).encode("utf-8")
         manifest = {
             "period": report.period,
+            "dossier_evidence_sha256": dossier.evidence_hash if dossier else None,
             "files": {
                 name: {
                     "sha256": hashlib.sha256(content).hexdigest(),

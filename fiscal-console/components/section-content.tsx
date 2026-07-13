@@ -8,6 +8,13 @@ import { RcvReport } from "./rcv-report";
 import { Onboarding } from "./onboarding";
 import { BheSection, F29Section, RcvSection, SiiProfileSection, SyncSection } from "./sii-sections";
 import { CertificationCockpit } from "./certification-cockpit";
+import { MonthlyClose } from "./monthly-close";
+import { MonthlyDossier } from "./monthly-dossier";
+import { PaymentsReconciliation } from "./payments-reconciliation";
+import { CommercialCenter } from "./commercial-center";
+import { ApprovalsCenter } from "./approvals-center";
+import { RecurringCenter } from "./recurring-center";
+import { fiscalSection } from "@/lib/fiscal-api";
 
 const issueOptions = [
   { code: "39 / 41", title: "Registrar una venta", detail: "Boleta afecta o exenta según los productos.", icon: Receipt, ready: true },
@@ -18,14 +25,20 @@ const issueOptions = [
 
 type SectionCopy = { eyebrow: string; title: string; description: string };
 
-export function SectionContent({ section }: { section: NavigationSection }) {
+export async function SectionContent({ section }: { section: NavigationSection }) {
   const content = navigationSections[section];
+  if(section==="aprobaciones") { const result=await fiscalSection<Array<{id:string;operation_type:string;operation_ref:string;amount:number;requested_by:string;required_role:string;status:string}>>("/v1/approvals?status=pending"); return <ApprovalsCenter initial={result.data??[]} source={result.source}/>; }
+  if(section==="recurrencia") { const result=await fiscalSection<Array<{id:string;counterparty_name:string;description:string;amount:number;day_of_month:number;next_run_on:string;active:number}>>("/v1/recurring-agreements"); return <RecurringCenter initial={result.data??[]} source={result.source}/>; }
+  if (["ventas", "compras", "inventario", "caja"].includes(section)) return <CommercialCenter section={section as "ventas" | "compras" | "inventario" | "caja"} />;
   if (section === "emitir") return <IssueSection content={content} />;
   if (section === "documentos") return <DocumentsSection content={content} />;
   if (section === "recibidos") return <ReceivedInbox />;
   if (section === "reportes") return <RcvReport />;
+  if (section === "cierre") return <MonthlyClose result={await fiscalSection("/v1/reports/monthly/2026/7/close/snapshots")} />;
+  if (section === "expediente") return <MonthlyDossier result={await fiscalSection("/v1/reports/monthly/2026/7/dossier")} />;
+  if (section === "pagos") return <PaymentsReconciliation result={await fiscalSection("/v1/payments/reconciliation/2026/7")} />;
   if (section === "rcv") return <RcvSection />;
-  if (section === "f29") return <F29Section />;
+  if (section === "f29") return <F29Section result={await fiscalSection("/v1/reports/monthly/2026/7/close/snapshots")} />;
   if (section === "bhe") return <BheSection />;
   if (section === "situacion") return <SiiProfileSection />;
   if (section === "sincronizaciones") return <SyncSection />;

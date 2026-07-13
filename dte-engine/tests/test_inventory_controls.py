@@ -1,0 +1,5 @@
+from decimal import Decimal
+from completo_dte.infrastructure import FolioLedger
+def test_transfer_is_paired_and_minimum_alert_is_real(tmp_path):
+ ledger=FolioLedger(tmp_path/"db");ledger.migrate();p=ledger.create_inventory_product(tenant_id="a",sku="1",name="Producto",unit="un");ledger.append_inventory_movement(tenant_id="a",product_id=p.id,branch_id="a",movement_type="purchase",quantity=Decimal(10),source_ref="OC",reason="Compra",actor_ref="owner",idempotency_key="purchase-1");ledger.set_inventory_minimum(tenant_id="a",product_id=p.id,branch_id="a",minimum_quantity=Decimal(8));transfer=ledger.transfer_inventory(tenant_id="a",product_id=p.id,from_branch_id="a",to_branch_id="b",quantity=Decimal(3),actor_ref="owner",idempotency_key="transfer-1");retry=ledger.transfer_inventory(tenant_id="a",product_id=p.id,from_branch_id="a",to_branch_id="b",quantity=Decimal(3),actor_ref="owner",idempotency_key="transfer-1")
+ assert transfer==retry and ledger.inventory_balance(tenant_id="a",product_id=p.id,branch_id="a")==7 and ledger.inventory_balance(tenant_id="a",product_id=p.id,branch_id="b")==3 and len(ledger.inventory_below_minimum(tenant_id="a"))==1

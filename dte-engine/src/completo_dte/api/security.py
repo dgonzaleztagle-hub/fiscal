@@ -11,16 +11,19 @@ from fastapi import Header, HTTPException, status
 @dataclass(frozen=True)
 class ApiPrincipal:
     tenant_id: str
+    actor_ref: str = "api-key"
+    roles: frozenset[str] = frozenset({"system"})
+    entitlements: frozenset[str] = frozenset({"fiscal"})
 
 
-def build_authenticator(api_keys: dict[str, str]) -> Callable[..., ApiPrincipal]:
+def build_authenticator(api_keys: dict[str, str | ApiPrincipal]) -> Callable[..., ApiPrincipal]:
     """Compila tokens a hashes y devuelve una dependencia FastAPI constante en tiempo."""
     if not api_keys:
         raise ValueError("Se requiere al menos una API key")
     hashed_keys = tuple(
-        (_token_digest(token), ApiPrincipal(tenant_id))
-        for token, tenant_id in api_keys.items()
-        if token and tenant_id
+        (_token_digest(token), value if isinstance(value,ApiPrincipal) else ApiPrincipal(value))
+        for token, value in api_keys.items()
+        if token and value
     )
     if len(hashed_keys) != len(api_keys):
         raise ValueError("API keys y tenant IDs no pueden estar vacíos")

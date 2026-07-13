@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   Boxes,
   Building2,
   ChevronDown,
-  CircleHelp,
   ClipboardCheck,
+  CalendarCheck2,
+  FolderArchive,
+  CreditCard,
   CloudCog,
   FileChartColumn,
   Landmark,
@@ -21,15 +24,29 @@ import {
   ShieldCheck,
   Tags,
   UsersRound,
+  HandCoins,
+  ShoppingCart,
+  Warehouse,
+  ChartNoAxesCombined,
+  Menu,
+  X,
 } from "lucide-react";
 import { EnvironmentBanner } from "./environment-banner";
+import { HelpCenter } from "./help-center";
 
 const navigation = [
-  { href: "/", label: "Inicio", icon: Gauge },
+  { href: "/dashboard", label: "Inicio", icon: Gauge },
   { href: "/emitir", label: "Emitir", icon: FileOutput, accent: true },
   { href: "/documentos", label: "Documentos", icon: ReceiptText },
   { href: "/recibidos", label: "Recibidos", icon: FileInput, count: 3 },
   { divider: true, label: "Gestión" },
+  { href: "/ventas", label: "Ventas y cotizaciones", icon: HandCoins },
+  { href: "/compras", label: "Órdenes de compra", icon: ShoppingCart },
+  { href: "/inventario", label: "Inventario", icon: Warehouse },
+  { href: "/inventario/control", label: "Control de stock", icon: Boxes },
+  { href: "/caja", label: "Caja proyectada", icon: ChartNoAxesCombined },
+  { href: "/aprobaciones", label: "Aprobaciones", icon: ClipboardCheck },
+  { href: "/recurrencia", label: "Acuerdos mensuales", icon: CalendarCheck2 },
   { href: "/clientes", label: "Clientes", icon: UsersRound },
   { href: "/proveedores", label: "Proveedores", icon: Building2 },
   { href: "/productos", label: "Productos", icon: Tags },
@@ -37,6 +54,9 @@ const navigation = [
   { href: "/folios", label: "Folios y CAF", icon: Boxes },
   { href: "/envios", label: "Envíos SII", icon: Send },
   { href: "/reportes", label: "Reportes", icon: ClipboardCheck },
+  { href: "/cierre", label: "Cierre mensual", icon: CalendarCheck2 },
+  { href: "/expediente", label: "Expediente mensual", icon: FolderArchive },
+  { href: "/pagos", label: "Pagos y vouchers", icon: CreditCard },
   { divider: true, label: "SII conectado" },
   { href: "/rcv", label: "Registro compras/ventas", icon: ScanSearch },
   { href: "/f29", label: "Propuesta F29", icon: FileChartColumn },
@@ -49,10 +69,11 @@ const navigation = [
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <Link href="/" className="brand" aria-label="Completo Fiscal, inicio">
+        <Link href="/dashboard" className="brand" aria-label="Completo Fiscal, inicio">
           <span className="brand-mark"><ReceiptText size={20} /></span>
           <span><strong>Completo</strong><small>Fiscal</small></span>
         </Link>
@@ -61,21 +82,21 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <span><strong>Empresa Sintética</strong><small>76.192.083-9</small></span>
           <ChevronDown size={15} />
         </button>
-        <nav aria-label="Navegación fiscal">
+        <nav aria-label="Navegación fiscal" className={mobileMenuOpen ? "mobile-open" : ""}>
           {navigation.map((item, index) => {
             if ("divider" in item) return <p className="nav-label" key={`${item.label}-${index}`}>{item.label}</p>;
             const Icon = item.icon;
-            const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            const active = pathname.startsWith(item.href);
             return (
-              <Link aria-label={item.label} className={`nav-link${active ? " active" : ""}${"accent" in item ? " nav-accent" : ""}`} href={item.href} key={item.href}>
+              <Link onClick={() => setMobileMenuOpen(false)} aria-label={item.label} className={`nav-link${active ? " active" : ""}${"accent" in item ? " nav-accent" : ""}`} href={item.href} key={item.href}>
                 <Icon size={18} aria-hidden="true" /><span>{item.label}</span>
                 {"count" in item && <em>{item.count}</em>}
               </Link>
             );
           })}
+          <button aria-expanded={mobileMenuOpen} aria-label={mobileMenuOpen ? "Cerrar menú" : "Más secciones"} className="mobile-more" onClick={() => setMobileMenuOpen(value => !value)} type="button">{mobileMenuOpen ? <X size={21}/> : <Menu size={21}/>}<span>Más</span></button>
         </nav>
         <div className="sidebar-foot">
-          <button type="button"><CircleHelp size={17} /> Centro de ayuda</button>
           <div className="operator"><span>DG</span><p><strong>Daniel González</strong><small>Administrador</small></p></div>
         </div>
       </aside>
@@ -83,6 +104,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <EnvironmentBanner />
         <main>{children}</main>
       </div>
+      <HelpCenter />
     </div>
   );
 }

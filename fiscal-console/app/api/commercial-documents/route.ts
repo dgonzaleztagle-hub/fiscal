@@ -1,0 +1,7 @@
+import { NextRequest,NextResponse } from "next/server";
+export async function POST(request:NextRequest){
+ const base=process.env.FISCAL_API_URL,token=process.env.FISCAL_API_TOKEN;
+ if(!base||!token)return NextResponse.json({detail:"Motor no conectado"},{status:503});
+ const response=await fetch(new URL("/v1/commercial-documents",base),{method:"POST",headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json","Idempotency-Key":request.headers.get("Idempotency-Key")??crypto.randomUUID()},body:await request.text(),cache:"no-store"});
+ return new NextResponse(await response.text(),{status:response.status,headers:{"Content-Type":"application/json"}});
+}

@@ -1,0 +1,15 @@
+CREATE TABLE fiscal.inventory_products(
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,sku text NOT NULL,name text NOT NULL,unit text NOT NULL,active boolean NOT NULL DEFAULT true,created_at timestamptz NOT NULL DEFAULT now(),UNIQUE(tenant_id,sku));
+CREATE TABLE fiscal.inventory_movements(
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,product_id uuid NOT NULL REFERENCES fiscal.inventory_products(id),branch_id uuid NOT NULL,movement_type text NOT NULL CHECK(movement_type IN('purchase','sale','transfer_in','transfer_out','adjustment_in','adjustment_out','return_in','return_out')),quantity numeric(18,6) NOT NULL CHECK(quantity>0),source_ref text NOT NULL,reason text NOT NULL,actor_ref text NOT NULL,idempotency_key text NOT NULL,occurred_at timestamptz NOT NULL DEFAULT now(),UNIQUE(tenant_id,idempotency_key));
+CREATE TABLE fiscal.financial_obligations(
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,direction text NOT NULL CHECK(direction IN('receivable','payable')),counterparty_ref text NOT NULL,counterparty_name text NOT NULL,source_ref text NOT NULL,branch_id uuid NOT NULL,amount bigint NOT NULL CHECK(amount>0),due_on date NOT NULL,status text NOT NULL CHECK(status IN('open','partial','paid','cancelled')),created_at timestamptz NOT NULL DEFAULT now(),UNIQUE(tenant_id,direction,source_ref));
+CREATE TABLE fiscal.obligation_payments(
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,obligation_id uuid NOT NULL REFERENCES fiscal.financial_obligations(id),amount bigint NOT NULL CHECK(amount>0),paid_on date NOT NULL,method text NOT NULL,evidence_ref text,actor_ref text NOT NULL,idempotency_key text NOT NULL,created_at timestamptz NOT NULL DEFAULT now(),UNIQUE(tenant_id,idempotency_key));
+CREATE TABLE fiscal.approval_requests(
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,operation_type text NOT NULL,operation_ref text NOT NULL,amount bigint NOT NULL CHECK(amount>=0),requested_by text NOT NULL,required_role text NOT NULL,status text NOT NULL CHECK(status IN('pending','approved','rejected','cancelled')),decided_by text,reason text,created_at timestamptz NOT NULL DEFAULT now(),decided_at timestamptz,UNIQUE(tenant_id,operation_type,operation_ref));
+ALTER TABLE fiscal.inventory_products ENABLE ROW LEVEL SECURITY;ALTER TABLE fiscal.inventory_movements ENABLE ROW LEVEL SECURITY;ALTER TABLE fiscal.financial_obligations ENABLE ROW LEVEL SECURITY;ALTER TABLE fiscal.obligation_payments ENABLE ROW LEVEL SECURITY;ALTER TABLE fiscal.approval_requests ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON fiscal.inventory_products,fiscal.inventory_movements,fiscal.financial_obligations,fiscal.obligation_payments,fiscal.approval_requests FROM anon,authenticated;
+CREATE INDEX inventory_movements_balance_idx ON fiscal.inventory_movements(tenant_id,branch_id,product_id,occurred_at);
+CREATE INDEX financial_obligations_due_idx ON fiscal.financial_obligations(tenant_id,direction,status,due_on);
+CREATE INDEX approval_requests_pending_idx ON fiscal.approval_requests(tenant_id,status,created_at);

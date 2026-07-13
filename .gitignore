@@ -23,6 +23,7 @@ backups/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.pytest-results.xml
 .ruff_cache/
 build/
 dist/

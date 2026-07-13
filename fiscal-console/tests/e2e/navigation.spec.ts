@@ -1,7 +1,18 @@
 import { expect, test } from "@playwright/test";
 
-test("mantiene el shell al revisar un documento recibido", async ({ page }) => {
+test("la landing vende con honestidad y abre el sandbox público", async ({ page }) => {
   await page.goto("/");
+  await expect(page.getByRole("heading", { name: /Tu negocio al día/ })).toBeVisible();
+  await expect(page.getByText("No emite ni presenta documentos reales.")).toBeVisible();
+  const sandbox = page.getByRole("link", { name: "Explorar sandbox" });
+  await expect(sandbox).toHaveAttribute("href", "/dashboard");
+  await sandbox.click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByRole("heading", { name: "Tu operación fiscal, al día." })).toBeVisible();
+});
+
+test("mantiene el shell al revisar un documento recibido", async ({ page }) => {
+  await page.goto("/dashboard");
   await expect(
     page.getByRole("heading", { name: "Tu operación fiscal, al día." }),
   ).toBeVisible();
@@ -11,7 +22,8 @@ test("mantiene el shell al revisar un documento recibido", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Documentos recibidos" }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Revisar" }).first().click();
+  await page.locator('a[href="/recibidos/demo-33-7841"]').click();
+  await expect(page).toHaveURL(/\/recibidos\/demo-33-7841$/);
 
   await expect(
     page.getByRole("heading", { name: "DISTRIBUIDORA CENTRAL SPA" }),

@@ -163,6 +163,34 @@ def auth(token: str = TOKEN_A) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
+def test_commercial_inventory_and_treasury_apis_are_tenant_scoped(tmp_path) -> None:
+    client = make_client(tmp_path)
+    commercial = client.post("/v1/commercial-documents", headers={**auth(),"Idempotency-Key":"quote-api-1"}, json={
+        "kind":"quote","branch_id":"main","counterparty_ref":"client-1","counterparty_name":"Cliente Uno",
+        "issued_on":"2026-07-13","valid_until":"2026-07-30","currency":"CLP","notes":"",
+        "lines":[{"description":"Servicio","quantity":"1","unit_price":"100000","discount_percent":"0"}],
+    })
+    assert commercial.status_code == 201
+    assert client.get("/v1/commercial-documents",headers=auth(TOKEN_B)).json() == []
+    product = client.post("/v1/inventory/products",headers=auth(),json={"sku":"SKU-1","name":"Producto","unit":"un"})
+    assert product.status_code == 201
+    movement = client.post("/v1/inventory/movements",headers={**auth(),"Idempotency-Key":"movement-api-1"},json={
+        "product_id":product.json()["id"],"branch_id":"main","movement_type":"purchase","quantity":"5",
+        "source_ref":"OC-1","reason":"Recepción"})
+    assert movement.status_code == 201
+    balance=client.get(f"/v1/inventory/products/{product.json()['id']}/branches/main/balance",headers=auth()).json()
+    assert balance["quantity"] == "5"
+    obligation=client.post("/v1/obligations",headers=auth(),json={"direction":"receivable","counterparty_ref":"client-1","counterparty_name":"Cliente Uno","source_ref":"F33-9","branch_id":"main","amount":100000,"due_on":"2026-07-30"})
+    assert obligation.status_code == 201
+    paid=client.post(f"/v1/obligations/{obligation.json()['id']}/payments",headers={**auth(),"Idempotency-Key":"payment-api-1"},json={"amount":25000,"paid_on":"2026-07-15","method":"transfer","evidence_ref":"bank-1"})
+    assert paid.status_code == 201 and paid.json()["outstanding"] == 75000
+    approval=client.post("/v1/approvals",headers=auth(),json={"operation_type":"purchase_order","operation_ref":"OC-99","amount":900000,"required_role":"owner"})
+    assert approval.status_code == 201
+    assert client.get("/v1/approvals?status=pending",headers=auth()).json()[0]["operation_ref"] == "OC-99"
+    decision=client.post(f"/v1/approvals/{approval.json()['id']}/decision",headers=auth(),json={"decision":"approved","reason":"Autorizada"})
+    assert decision.status_code == 200 and decision.json()["status"] == "approved"
+
+
 def test_health_does_not_require_credentials(tmp_path) -> None:
     response = make_client(tmp_path).get("/health")
     assert response.status_code == 200
@@ -685,3 +713,143 @@ def test_imports_and_lists_received_signed_xml_with_tenant_isolation(tmp_path) -
     assert package.status_code == 200
     assert package.content.startswith(b"PK")
     assert len(package.headers["x-content-sha256"]) == 64
+
+
+def test_monthly_close_is_explainable_and_validates_adjustments(tmp_path) -> None:
+    client = make_client(tmp_path)
+    response = client.post(
+        "/v1/reports/monthly/2026/7/close",
+        headers=auth(),
+        json={
+            "prior_vat_credit": 1000,
+            "ppm_rate_basis_points": 100,
+            "sii_proposal": {"sales_vat": 0},
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["period"] == "2026-07"
+    assert body["formula_version"] == "plus-baseline-2026-07-v1"
+    assert len(body["source_hash"]) == 64
+    assert len(body["calculation_hash"]) == 64
+    assert body["version"] == 1
+    assert body["snapshot_id"]
+    assert body["notice"].startswith("Propuesta informativa")
+    assert {line["state"] for line in body["lines"]} <= {
+        "match",
+        "different",
+        "not_compared",
+    }
+
+    negative = client.post(
+        "/v1/reports/monthly/2026/7/close",
+        headers=auth(),
+        json={"prior_vat_credit": -1},
+    )
+    unknown = client.post(
+        "/v1/reports/monthly/2026/7/close",
+        headers=auth(),
+        json={"invented_tax": 1},
+    )
+    assert negative.status_code == 422
+    assert unknown.status_code == 422
+
+    retry = client.post(
+        "/v1/reports/monthly/2026/7/close",
+        headers=auth(),
+        json={
+            "prior_vat_credit": 1000,
+            "ppm_rate_basis_points": 100,
+            "sii_proposal": {"sales_vat": 0},
+        },
+    )
+    assert retry.json()["snapshot_id"] == body["snapshot_id"]
+    snapshots = client.get(
+        "/v1/reports/monthly/2026/7/close/snapshots", headers=auth()
+    )
+    assert snapshots.status_code == 200
+    assert len(snapshots.json()) == 1
+
+    opened = client.post(
+        f"/v1/reports/monthly/close/snapshots/{body['snapshot_id']}/reviews",
+        headers=auth(),
+        json={"actor_ref": "user-demo", "action": "opened"},
+    )
+    cross_tenant = client.post(
+        f"/v1/reports/monthly/close/snapshots/{body['snapshot_id']}/reviews",
+        headers=auth(TOKEN_B),
+        json={"actor_ref": "intruder", "action": "opened"},
+    )
+    assert opened.status_code == 200
+    assert opened.json()["actor_ref"] == "authenticated-tenant:tenant-a"
+    assert cross_tenant.status_code == 422
+
+    dossier = client.get(
+        "/v1/reports/monthly/2026/7/dossier", headers=auth()
+    )
+    assert dossier.status_code == 200
+    dossier_body = dossier.json()
+    assert dossier_body["period"] == "2026-07"
+    assert len(dossier_body["evidence_hash"]) == 64
+    assert {item["code"] for item in dossier_body["items"]} == {
+        "documents", "rcv", "close", "bhe", "people", "payments"
+    }
+    assert next(
+        item for item in dossier_body["items"] if item["code"] == "close"
+    )["state"] == "ready"
+
+
+def test_payment_import_reconciliation_and_tenant_isolation(tmp_path) -> None:
+    client = make_client(tmp_path)
+    payment = client.post(
+        "/v1/payments/electronic",
+        headers=auth(),
+        json={
+            "provider": "Transbank", "terminal_id": "POS-1",
+            "authorization_code": "AUTH-1", "provider_reference": "TBK-1",
+            "sale_ref": "sale-1", "amount": 11900,
+            "occurred_at": "2026-07-12T13:00:00-04:00",
+            "settlement_ref": "settle-1", "source": "provider_import",
+        },
+    )
+    assert payment.status_code == 201
+    result = client.post(
+        "/v1/payments/reconciliation/2026/7",
+        headers=auth(),
+        json={"sales": [{"sale_ref": "sale-1", "amount": 11900,
+                          "emission_model": "voucher_as_boleta"}]},
+    )
+    assert result.status_code == 200
+    assert result.json()["ready"] is True
+    bogus_dte = client.post(
+        "/v1/payments/reconciliation/2026/7", headers=auth(),
+        json={"sales": [{"sale_ref": "sale-1", "amount": 11900,
+                         "emission_model": "always_issue",
+                         "fiscal_document_ref": "DOES-NOT-EXIST"}]},
+    )
+    assert bogus_dte.status_code == 422
+    latest = client.get("/v1/payments/reconciliation/2026/7", headers=auth())
+    other = client.get("/v1/payments/reconciliation/2026/7", headers=auth(TOKEN_B))
+    assert latest.json()["snapshot_id"] == result.json()["snapshot_id"]
+    assert other.status_code == 404
+    people = client.post(
+        "/v1/integrations/people/monthly-summaries",
+        headers=auth(),
+        json={"period": "2026-07", "worker_count": 4,
+              "taxable_payroll": 3200000, "pension_obligations": 620000,
+              "single_tax": 45000, "other_withholdings": 10000,
+              "source_version": "people-v7"},
+    )
+    assert people.status_code == 201
+    assert client.get(
+        "/v1/integrations/people/monthly-summaries/2026/7", headers=auth()
+    ).json()["worker_count"] == 4
+    dossier = client.get("/v1/reports/monthly/2026/7/dossier", headers=auth()).json()
+    assert next(item for item in dossier["items"] if item["code"] == "payments")["state"] == "ready"
+    assert next(item for item in dossier["items"] if item["code"] == "people")["state"] == "ready"
+    recalculated = client.post(
+        "/v1/reports/monthly/2026/7/close", headers=auth(), json={}
+    ).json()
+    lines = {line["code"]: line["amount"] for line in recalculated["lines"]}
+    assert lines["single_tax"] == 45000
+    assert lines["additional_withholding"] == 10000

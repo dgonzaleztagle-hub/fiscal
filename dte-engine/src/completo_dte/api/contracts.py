@@ -23,6 +23,32 @@ from completo_dte.domain import (
 )
 
 
+class MonthlyCloseRequest(BaseModel):
+    """Ajustes explícitos; los documentos se resuelven desde el tenant autenticado."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    prior_vat_credit: int = Field(default=0, ge=0)
+    subject_change_credit: int = Field(default=0, ge=0)
+    subject_change_debit: int = Field(default=0, ge=0)
+    ppm_rate_basis_points: int = Field(default=0, ge=0, le=10_000)
+    second_category_withholding: int = Field(default=0, ge=0)
+    single_tax: int = Field(default=0, ge=0)
+    additional_withholding: int = Field(default=0, ge=0)
+    other_taxes: dict[str, int] = Field(default_factory=dict)
+    late_surcharge: int = Field(default=0, ge=0)
+    condonation: int = Field(default=0, ge=0)
+    sii_proposal: dict[str, int] = Field(default_factory=dict)
+
+
+class MonthlyCloseReviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    actor_ref: str = Field(min_length=1, max_length=120)
+    action: str = Field(pattern="^(opened|marked_ready|reviewed|frozen)$")
+    reason: str | None = Field(default=None, max_length=500)
+
+
 class IssuerRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

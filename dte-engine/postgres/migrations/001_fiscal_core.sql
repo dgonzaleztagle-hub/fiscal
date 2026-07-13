@@ -196,6 +196,70 @@ CREATE TABLE fiscal.inbound_documents (
     UNIQUE (tenant_id, issuer_rut, document_type, folio)
 );
 
+CREATE TABLE fiscal.monthly_close_snapshots (
+    id uuid PRIMARY KEY,
+    tenant_id uuid NOT NULL,
+    period text NOT NULL CHECK (period ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
+    version integer NOT NULL CHECK (version > 0),
+    formula_version text NOT NULL,
+    source_sha256 text NOT NULL CHECK (length(source_sha256) = 64),
+    calculation_sha256 text NOT NULL CHECK (length(calculation_sha256) = 64),
+    payload jsonb NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (tenant_id, period, version),
+    UNIQUE (tenant_id, period, calculation_sha256)
+);
+
+CREATE TABLE fiscal.monthly_close_reviews (
+    id uuid PRIMARY KEY,
+    snapshot_id uuid NOT NULL REFERENCES fiscal.monthly_close_snapshots(id),
+    tenant_id uuid NOT NULL,
+    actor_ref text NOT NULL,
+    action text NOT NULL CHECK (action IN ('opened', 'marked_ready', 'reviewed', 'frozen')),
+    reason text,
+    occurred_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE fiscal.electronic_payments (
+    id uuid PRIMARY KEY,
+    tenant_id uuid NOT NULL,
+    provider text NOT NULL,
+    terminal_id text NOT NULL,
+    authorization_code text NOT NULL,
+    provider_reference text NOT NULL,
+    sale_ref text NOT NULL,
+    amount bigint NOT NULL CHECK (amount > 0),
+    occurred_at timestamptz NOT NULL,
+    settlement_ref text,
+    source text NOT NULL CHECK (source IN ('pos_integration', 'provider_import', 'manual')),
+    imported_at timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (tenant_id, provider, terminal_id, authorization_code, provider_reference)
+);
+
+CREATE TABLE fiscal.payment_reconciliation_snapshots (
+    id uuid PRIMARY KEY,
+    tenant_id uuid NOT NULL,
+    period text NOT NULL CHECK (period ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
+    version integer NOT NULL CHECK (version > 0),
+    payload_sha256 text NOT NULL CHECK (length(payload_sha256) = 64),
+    payload jsonb NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (tenant_id, period, version),
+    UNIQUE (tenant_id, period, payload_sha256)
+);
+
+CREATE TABLE fiscal.people_monthly_summaries (
+    id uuid PRIMARY KEY,
+    tenant_id uuid NOT NULL,
+    period text NOT NULL CHECK (period ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
+    version integer NOT NULL CHECK (version > 0),
+    payload_sha256 text NOT NULL CHECK (length(payload_sha256) = 64),
+    payload jsonb NOT NULL,
+    imported_at timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (tenant_id, period, version),
+    UNIQUE (tenant_id, period, payload_sha256)
+);
+
 CREATE TABLE fiscal.fiscal_events (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     tenant_id uuid NOT NULL,
@@ -220,6 +284,8 @@ CREATE INDEX fiscal_envelope_state_status_idx
     ON fiscal.envelope_state (status, updated_at);
 CREATE INDEX fiscal_inbound_tenant_date_idx
     ON fiscal.inbound_documents (tenant_id, issued_on DESC);
+CREATE INDEX fiscal_monthly_close_period_idx
+    ON fiscal.monthly_close_snapshots (tenant_id, period, version DESC);
 
 CREATE OR REPLACE FUNCTION fiscal.reject_immutable_change()
 RETURNS trigger LANGUAGE plpgsql AS $$
@@ -242,6 +308,26 @@ FOR EACH ROW EXECUTE FUNCTION fiscal.reject_immutable_change();
 
 CREATE TRIGGER fiscal_inbound_immutable
 BEFORE UPDATE OR DELETE ON fiscal.inbound_documents
+FOR EACH ROW EXECUTE FUNCTION fiscal.reject_immutable_change();
+
+CREATE TRIGGER fiscal_monthly_close_snapshots_immutable
+BEFORE UPDATE OR DELETE ON fiscal.monthly_close_snapshots
+FOR EACH ROW EXECUTE FUNCTION fiscal.reject_immutable_change();
+
+CREATE TRIGGER fiscal_monthly_close_reviews_immutable
+BEFORE UPDATE OR DELETE ON fiscal.monthly_close_reviews
+FOR EACH ROW EXECUTE FUNCTION fiscal.reject_immutable_change();
+
+CREATE TRIGGER fiscal_electronic_payments_immutable
+BEFORE UPDATE OR DELETE ON fiscal.electronic_payments
+FOR EACH ROW EXECUTE FUNCTION fiscal.reject_immutable_change();
+
+CREATE TRIGGER fiscal_payment_reconciliation_immutable
+BEFORE UPDATE OR DELETE ON fiscal.payment_reconciliation_snapshots
+FOR EACH ROW EXECUTE FUNCTION fiscal.reject_immutable_change();
+
+CREATE TRIGGER fiscal_people_summaries_immutable
+BEFORE UPDATE OR DELETE ON fiscal.people_monthly_summaries
 FOR EACH ROW EXECUTE FUNCTION fiscal.reject_immutable_change();
 
 REVOKE ALL ON ALL TABLES IN SCHEMA fiscal FROM PUBLIC, anon, authenticated;

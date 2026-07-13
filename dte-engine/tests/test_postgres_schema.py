@@ -26,3 +26,10 @@ def test_postgres_schema_separates_immutable_payload_from_state() -> None:
     assert "CREATE TABLE fiscal.envelope_state" in SCHEMA
     assert "CREATE TRIGGER fiscal_documents_immutable" in SCHEMA
     assert "CREATE TRIGGER fiscal_envelopes_immutable" in SCHEMA
+    assert "CREATE TABLE fiscal.monthly_close_snapshots" in SCHEMA
+    assert "CREATE TABLE fiscal.monthly_close_reviews" in SCHEMA
+    assert "CREATE TRIGGER fiscal_monthly_close_snapshots_immutable" in SCHEMA
+    assert "CREATE TABLE fiscal.electronic_payments" in SCHEMA
+    assert "CREATE TABLE fiscal.payment_reconciliation_snapshots" in SCHEMA
+    assert "CREATE TRIGGER fiscal_electronic_payments_immutable" in SCHEMA
+    assert "CREATE TABLE fiscal.people_monthly_summaries" in SCHEMA
