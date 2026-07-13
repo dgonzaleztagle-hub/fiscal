@@ -35,6 +35,7 @@ export type DemoState = {
   inventoryProducts: DemoInventoryProduct[];
   obligations: DemoObligation[];
   activities: DemoActivity[];
+  idempotency: Record<string, string>;
 };
 
 export type DemoCommercialDocument = { id: string; number: number; kind: string; counterparty_name: string; valid_until: string | null; total: number; status: string };
@@ -143,6 +144,11 @@ export function issueSyntheticDocument(state: DemoState, input: DemoIssueInput) 
   if (![33, 34, 39, 41, 52, 56, 61].includes(input.documentType)) throw new Error("Tipo documental no permitido en sandbox");
   if (!input.itemName.trim() || !input.receiver.trim() || !Number.isFinite(input.quantity) || !Number.isFinite(input.unitPrice) || input.quantity <= 0 || input.quantity > 10_000 || input.unitPrice < 0 || input.unitPrice > 1_000_000_000) throw new Error("Datos incompletos o fuera de rango");
   if ([56, 61].includes(input.documentType) && !input.referenceId?.trim()) throw new Error("La nota debe indicar el documento que corrige");
+  if ([56, 61].includes(input.documentType)) {
+    const original = state.documents.find(document => document.id === input.referenceId);
+    if (!original) throw new Error("El documento de referencia no existe en este tenant sandbox");
+    if (!["33", "34", "56"].includes(original.kind)) throw new Error("Ese tipo documental no admite esta corrección");
+  }
   const exempt = input.exempt || input.documentType === 34 || input.documentType === 41;
   const invoice = [33, 34, 52, 56, 61].includes(input.documentType);
   const base = Math.round(input.quantity * input.unitPrice);
@@ -183,7 +189,7 @@ export function issueSyntheticDocument(state: DemoState, input: DemoIssueInput) 
 }
 
 function seedState(): DemoState {
-  return { version: 1, commercialDocuments: [], inventoryProducts: [], obligations: [], activities: [], documents: demoDocuments.map((document, index) => {
+  return { version: 1, commercialDocuments: [], inventoryProducts: [], obligations: [], activities: [], idempotency: {}, documents: demoDocuments.map((document, index) => {
     const total = document.amount;
     const exempt = document.kind === "34" || document.kind === "41";
     const net = exempt ? total : Math.round(total / 1.19);
@@ -195,14 +201,14 @@ function seedState(): DemoState {
       itemName: "Operación demostrativa",
       net,
       vat: exempt ? 0 : total - net,
-      events: [{ sequence: 1, event_type: "seeded_demo_document", occurred_at: `2026-07-${11 - Math.min(index, 2)}T12:00:00Z`, metadata: { synthetic: true } }],
+      events: [{ sequence: 1, event_type: "seeded_demo_document", occurred_at: `2026-07-${String(11 - Math.min(index, 2)).padStart(2, "0")}T12:00:00Z`, metadata: { synthetic: true } }],
     };
   }) };
 }
 
 function normalizeState(state: Partial<DemoState>): DemoState {
   const seed = seedState();
-  return { version: 1, documents: Array.isArray(state.documents) ? state.documents : seed.documents, commercialDocuments: state.commercialDocuments ?? [], inventoryProducts: state.inventoryProducts ?? [], obligations: state.obligations ?? [], activities: state.activities ?? [] };
+  return { version: 1, documents: Array.isArray(state.documents) ? state.documents : seed.documents, commercialDocuments: state.commercialDocuments ?? [], inventoryProducts: state.inventoryProducts ?? [], obligations: state.obligations ?? [], activities: state.activities ?? [], idempotency: state.idempotency ?? {} };
 }
 
 function supabaseFetch(path: string, init: RequestInit = {}) {

@@ -14,6 +14,7 @@ export function BoletaWizard() {
   const [issued, setIssued] = useState<{ id: string; folio: string } | null>(null);
   const [error, setError] = useState("");
   const draftLoaded = useRef(false);
+  const idempotencyKey = useRef<string | null>(null);
   useEffect(() => {
     const stored = window.sessionStorage.getItem("completo-fiscal:boleta-draft");
     if (stored) {
@@ -41,7 +42,8 @@ export function BoletaWizard() {
   async function issueInSandbox() {
     setIssuing(true); setError("");
     try {
-      const response = await fetch("/api/demo/fiscal-documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ documentType: type, receiver: "Consumidor final", itemName: name, quantity, unitPrice: price }) });
+      idempotencyKey.current ??= crypto.randomUUID();
+      const response = await fetch("/api/demo/fiscal-documents", { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey.current }, body: JSON.stringify({ documentType: type, receiver: "Consumidor final", itemName: name, quantity, unitPrice: price }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.detail ?? "No fue posible emitir");
       setIssued({ id: payload.id, folio: payload.folio });

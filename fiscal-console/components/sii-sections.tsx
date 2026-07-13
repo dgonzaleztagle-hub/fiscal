@@ -2,6 +2,7 @@ import { AlertTriangle, ArrowRight, Building2, CheckCircle2, CloudCog, FileChart
 import { clp } from "@/lib/format";
 import { bheRows, f29Lines, rcvDocuments, syncRows } from "@/lib/sii-demo-data";
 import type { EngineSectionResult } from "@/lib/fiscal-api";
+import { DemoActionButton } from "./demo-action-button";
 
 function SourceBar({ version = "snapshot sintético v2" }: { version?: string }) {
   return <div className="sii-source"><span><CloudCog size={15} /><strong>Vista SII</strong> {version}</span><span>Consultado 11 jul 2026 · 08:20</span></div>;
@@ -33,6 +34,6 @@ export function SyncSection() {
   return <div className="page section-page"><SiiHeader eyebrow="Conector de lectura" title="Sincronizaciones SII" detail="Cada consulta genera una versión nueva; jamás reescribe la evidencia anterior." action="Nueva sincronización" /><SourceBar version="worker simulado · sin credenciales" /><section className="panel sync-list"><div className="table-toolbar"><div><h2>Última ejecución</h2><p>Sesión cerrada correctamente · 11 jul 2026 08:20</p></div><span className="received-status success">Completada</span></div>{syncRows.map((row, index) => <article key={row.resource}><span>{index + 1}</span><div><strong>{row.resource}</strong><p>{row.at}</p></div><div><small>Resultado</small><strong>{row.result}</strong></div><code>{row.version}</code><em className={row.tone}>Correcto</em></article>)}</section><section className="tip-card"><ShieldCheck size={21} /><div><strong>El reader no puede emitir documentos</strong><p>Consulta y normaliza datos en un worker aislado; no accede a CAF, certificados ni firma tributaria.</p></div></section></div>;
 }
 
-function SiiHeader({ eyebrow, title, detail, action }: { eyebrow: string; title: string; detail: string; action: string }) { return <header className="page-header"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p>{detail}</p></div><button className="primary-button" type="button"><RefreshCw size={16} /> {action}</button></header>; }
+function SiiHeader({ eyebrow, title, detail, action }: { eyebrow: string; title: string; detail: string; action: string }) { return <header className="page-header"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p>{detail}</p></div><DemoActionButton area={`sii_${action.toLowerCase().replaceAll(" ", "_")}`} done="Snapshot simulado actualizado"><RefreshCw size={16} /> {action}</DemoActionButton></header>; }
 function Metric({ label, value, detail, warning }: { label: string; value: string; detail: string; warning?: boolean }) { return <article className={`panel summary-card${warning ? " metric-warning" : ""}`}><FileChartColumn size={19} /><div><small>{label}</small><strong>{value}</strong><p>{detail}</p></div></article>; }
 function DifferenceTip() { return <section className="tip-card"><AlertTriangle size={21} /><div><strong>Una diferencia abre una tarea, no una corrección automática</strong><p>La factura que aparece sólo en el SII debe conseguirse o clasificarse antes de utilizarla tributariamente.</p></div></section>; }

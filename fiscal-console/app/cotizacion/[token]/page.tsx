@@ -1,15 +1,21 @@
 import { notFound } from "next/navigation";
 import { PublicQuoteDecision } from "@/components/public-quote-decision";
+import { fiscalPublicEngineUrl } from "@/lib/fiscal-runtime";
 
 type Quote = { number: number; counterparty_name: string; issued_on: string; valid_until: string | null; currency: string; total: number; lines: Array<{ description: string; quantity: string; subtotal: number }> };
 
 export default async function Page({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const base = process.env.FISCAL_API_URL;
-  if (!base) notFound();
-  const response = await fetch(new URL(`/v1/public/commercial/${encodeURIComponent(token)}`, base), { cache: "no-store" });
-  if (!response.ok) notFound();
-  const quote = await response.json() as Quote;
+  const base = fiscalPublicEngineUrl();
+  let quote: Quote;
+  if (!base) {
+    if (token !== "demo") notFound();
+    quote = { number: 18, counterparty_name: "CLIENTE DEMOSTRACIÓN SPA", issued_on: "2026-07-13", valid_until: "2026-07-28", currency: "CLP", total: 475000, lines: [{ description: "Servicio mensual Completo Fiscal", quantity: "1", subtotal: 475000 }] };
+  } else {
+    const response = await fetch(new URL(`/v1/public/commercial/${encodeURIComponent(token)}`, base), { cache: "no-store" });
+    if (!response.ok) notFound();
+    quote = await response.json() as Quote;
+  }
   return <main className="public-quote">
     <header><span>Completo Fiscal</span><p>Cotización #{quote.number}</p></header>
     <section className="panel">

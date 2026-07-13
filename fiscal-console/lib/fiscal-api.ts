@@ -2,6 +2,7 @@ import "server-only";
 import type { components } from "./api.generated";
 import type { DemoDocument } from "./demo-data";
 import { loadDemoState } from "./demo-store";
+import { fiscalEngineCredentials } from "./fiscal-runtime";
 
 type DocumentResponse = components["schemas"]["DocumentResponse"];
 type EventResponse = components["schemas"]["EventResponse"];
@@ -30,9 +31,9 @@ export type FiscalDocumentDetail = DemoDocument & {
 export type EngineSectionResult<T> = { data: T | null; source: "engine" | "sandbox" | "demo"; warning?: string };
 
 export async function fiscalSection<T>(path: string): Promise<EngineSectionResult<T>> {
-  const baseUrl = process.env.FISCAL_API_URL;
-  const token = process.env.FISCAL_API_TOKEN;
-  if (!baseUrl || !token) return { data: await sandboxSection<T>(path), source: "sandbox" };
+  const engine = fiscalEngineCredentials();
+  if (!engine) return { data: await sandboxSection<T>(path), source: "sandbox" };
+  const { baseUrl, token } = engine;
   try {
     const response = await engineFetch(path, baseUrl, token);
     if (response.status === 404) return { data: null, source: "engine" };
@@ -44,12 +45,12 @@ export async function fiscalSection<T>(path: string): Promise<EngineSectionResul
 }
 
 export async function fiscalDocuments(limit?: number): Promise<FiscalDocumentsResult> {
-  const baseUrl = process.env.FISCAL_API_URL;
-  const token = process.env.FISCAL_API_TOKEN;
-  if (!baseUrl || !token) {
+  const engine = fiscalEngineCredentials();
+  if (!engine) {
     const state = await loadDemoState();
     return { rows: slice(state.documents, limit), source: "sandbox" };
   }
+  const { baseUrl, token } = engine;
   try {
     const url = new URL("/v1/fiscal-documents", baseUrl);
     url.searchParams.set("limit", String(limit ?? 50));
@@ -75,9 +76,9 @@ export async function fiscalDocuments(limit?: number): Promise<FiscalDocumentsRe
 }
 
 export async function fiscalDocument(id: string): Promise<FiscalDocumentDetail | null> {
-  const baseUrl = process.env.FISCAL_API_URL;
-  const token = process.env.FISCAL_API_TOKEN;
-  if (!baseUrl || !token) return demoDetail(id);
+  const engine = fiscalEngineCredentials();
+  if (!engine) return demoDetail(id);
+  const { baseUrl, token } = engine;
   try {
     const [recordResponse, eventsResponse] = await Promise.all([
       engineFetch(`/v1/fiscal-documents/${encodeURIComponent(id)}`, baseUrl, token),

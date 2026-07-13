@@ -560,6 +560,10 @@ a { color: inherit; text-decoration: none; }
 .import-preview { display:grid;gap:5px;padding:13px;border-radius:9px;background:#f4f6f9;overflow:auto; }
 .import-preview code { font-size:11px;white-space:nowrap; }
 .commercial-list button:disabled { cursor:not-allowed;opacity:.45; }
+[data-document-filter="accepted"] [data-document-status]:not([data-document-status="accepted"]),
+[data-document-filter="submitted"] [data-document-status]:not([data-document-status="submitted"]),
+[data-document-filter="attention"] [data-document-status]:not([data-document-status="attention"]),
+[data-document-filter="draft"] [data-document-status]:not([data-document-status="draft"]) { display:none; }
 .treasury-actions { display:flex;gap:10px;margin-bottom:16px; }
 .approvals-list>article{display:grid;grid-template-columns:minmax(220px,1fr) 120px 100px 90px;gap:16px;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line)}.approvals-list article p{margin:4px 0 0;color:var(--muted);font-size:12px}.approvals-list article>span{display:flex;gap:6px}.approvals-list button{width:34px;height:34px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}.approvals-list button:first-child{color:var(--success)}.approvals-list button:last-child{color:#a23535}
 

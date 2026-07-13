@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, Building2, CheckCircle2, Clock3, FileKey2, PackageCheck, RefreshCw, Send } from "lucide-react";
+import { DemoActionButton } from "./demo-action-button";
 
 const providers = [
   { name: "Distribuidora Central SpA", rut: "76.345.210-8", purchases: "$428.400", documents: "7 documentos", note: "1 factura por revisar", tone: "warning" },
@@ -39,7 +40,7 @@ export function FolioControl() {
 
 export function SubmissionTracking() {
   return <div className="page section-page">
-    <header className="page-header"><div><p className="eyebrow">Comunicación SII · Hoy</p><h1>Envíos y seguimiento</h1><p>Cada sobre conserva documentos, Track ID, intentos y resultado reconciliado.</p></div><button className="secondary-button" type="button"><RefreshCw size={16}/> Consultar estados</button></header>
+    <header className="page-header"><div><p className="eyebrow">Comunicación SII · Hoy</p><h1>Envíos y seguimiento</h1><p>Cada sobre conserva documentos, Track ID, intentos y resultado reconciliado.</p></div><DemoActionButton area="submission_status_query" className="secondary-button" done="Estados simulados actualizados"><RefreshCw size={16}/> Consultar estados</DemoActionButton></header>
     <div className="summary-grid"><article className="panel summary-card"><Send size={19}/><div><small>Enviados hoy</small><strong>3</strong><p>50 documentos</p></div></article><article className="panel summary-card"><CheckCircle2 size={19}/><div><small>Aceptados</small><strong>2</strong><p>Sin reparos</p></div></article><article className="panel summary-card metric-warning"><Clock3 size={19}/><div><small>En proceso</small><strong>1</strong><p>Consulta pendiente</p></div></article></div>
     <section className="panel operational-list"><div className="table-toolbar"><div><h2>Sobres recientes</h2><p>Un timeout queda desconocido hasta reconciliar; nunca se reenvía a ciegas</p></div><span className="demo-action">Simulación SII</span></div>{submissions.map(item => <article key={item.envelope}><span className="document-code"><Send size={16}/></span><div><strong>{item.envelope}</strong><p>{item.documents} · {item.sent}</p></div><div><small>Track ID</small><b>{item.track}</b></div><em className={`received-status ${item.tone}`}>{item.state}</em><Link aria-label={`Abrir ${item.envelope}`} href="/documentos"><ArrowRight size={17}/></Link></article>)}</section>
   </div>;

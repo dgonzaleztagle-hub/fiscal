@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fiscalEngineCredentials } from "@/lib/fiscal-runtime";
 
 export async function GET() {
   return forward("/v1/certification/readiness", "GET", undefined, readinessFallback());
@@ -15,9 +16,9 @@ export async function POST(request: NextRequest) {
 }
 
 async function forward(path: string, method: "GET" | "POST", body: unknown, fallback: object) {
-  const base = process.env.FISCAL_API_URL;
-  const token = process.env.FISCAL_API_TOKEN;
-  if (!base || !token) return NextResponse.json(fallback);
+  const engine = fiscalEngineCredentials();
+  if (!engine) return NextResponse.json(fallback);
+  const { baseUrl: base, token } = engine;
   try {
     const response = await fetch(new URL(path, base), { method, headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined, cache: "no-store", signal: AbortSignal.timeout(15_000) });
     if (!response.ok) throw new Error(String(response.status));

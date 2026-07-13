@@ -16,6 +16,7 @@ import { ApprovalsCenter } from "./approvals-center";
 import { RecurringCenter } from "./recurring-center";
 import { fiscalSection } from "@/lib/fiscal-api";
 import { FolioControl, ProvidersSection, SubmissionTracking } from "./operational-sections";
+import { DocumentFilters } from "./document-filters";
 
 const issueOptions = [
   { code: "39 / 41", title: "Registrar una venta", detail: "Boleta afecta o exenta según los productos.", icon: Receipt, ready: true },
@@ -61,7 +62,7 @@ function IssueSection({ content }: { content: SectionCopy }) {
 }
 
 function DocumentsSection({ content }: { content: SectionCopy }) {
-  return <div className="page section-page"><header className="page-header"><div><p className="eyebrow">{content.eyebrow}</p><h1>{content.title}</h1><p>{content.description}</p></div><Link className="primary-button" href="/emitir"><FilePlus2 size={18} /> Emitir documento</Link></header><div className="filter-row"><button className="active">Todos <span>5</span></button><button>Aceptados <span>2</span></button><button>En proceso <span>1</span></button><button>Por resolver <span>1</span></button><button>Borradores <span>1</span></button></div><section className="panel documents-panel"><DocumentTable /></section></div>;
+  return <div className="page section-page"><header className="page-header"><div><p className="eyebrow">{content.eyebrow}</p><h1>{content.title}</h1><p>{content.description}</p></div><Link className="primary-button" href="/emitir"><FilePlus2 size={18} /> Emitir documento</Link></header><DocumentFilters /><section className="panel documents-panel"><DocumentTable /></section></div>;
 }
 
 function CertificationSection({ content }: { content: SectionCopy }) {

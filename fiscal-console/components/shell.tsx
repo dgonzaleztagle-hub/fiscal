@@ -77,7 +77,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <span className="brand-mark"><ReceiptText size={20} /></span>
           <span><strong>Completo</strong><small>Fiscal</small></span>
         </Link>
-        <button className="tenant-switch" type="button">
+        <button className="tenant-switch" type="button" disabled title="El sandbox público utiliza un único tenant sintético">
           <span className="tenant-avatar">ES</span>
           <span><strong>Empresa Sintética</strong><small>76.192.083-9</small></span>
           <ChevronDown size={15} />

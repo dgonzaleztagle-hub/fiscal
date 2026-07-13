@@ -1,15 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { demoDocumentById } from "@/lib/demo-store";
+import { fiscalEngineCredentials } from "@/lib/fiscal-runtime";
 
 const allowed = new Set(["xml", "pdf"]);
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string; artifact: string }> }) {
   const { id, artifact } = await params;
   if (!allowed.has(artifact)) return NextResponse.json({ error: "Representación no disponible" }, { status: 404 });
-  const baseUrl = process.env.FISCAL_API_URL;
-  const token = process.env.FISCAL_API_TOKEN;
-  if (!baseUrl || !token) return sandboxArtifact(id, artifact);
+  const engine = fiscalEngineCredentials();
+  if (!engine) return sandboxArtifact(id, artifact);
+  const { baseUrl, token } = engine;
   const upstream = await fetch(new URL(`/v1/fiscal-documents/${encodeURIComponent(id)}/${artifact}`, baseUrl), {
     headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal: AbortSignal.timeout(8000),
   });

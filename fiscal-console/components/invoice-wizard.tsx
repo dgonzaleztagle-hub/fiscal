@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ArrowLeft, Building2, CheckCircle2, Info, ShieldCheck } from "lucide-react";
 
 export function InvoiceWizard() {
@@ -20,6 +20,7 @@ export function InvoiceWizard() {
   const [issuing, setIssuing] = useState(false);
   const [issued, setIssued] = useState<{ id: string; folio: string } | null>(null);
   const [error, setError] = useState("");
+  const idempotencyKey = useRef<string | null>(null);
   const net = useMemo(() => Math.max(0, quantity * netPrice), [quantity, netPrice]);
   const vat = exempt ? 0 : Math.round(net * 0.19);
   const type = exempt ? 34 : 33;
@@ -28,7 +29,8 @@ export function InvoiceWizard() {
   async function issueInSandbox() {
     setIssuing(true); setError("");
     try {
-      const response = await fetch("/api/demo/fiscal-documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ documentType: type, receiver, itemName: name, quantity, unitPrice: netPrice }) });
+      idempotencyKey.current ??= crypto.randomUUID();
+      const response = await fetch("/api/demo/fiscal-documents", { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey.current }, body: JSON.stringify({ documentType: type, receiver, itemName: name, quantity, unitPrice: netPrice }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.detail ?? "No fue posible emitir");
       setIssued({ id: payload.id, folio: payload.folio });

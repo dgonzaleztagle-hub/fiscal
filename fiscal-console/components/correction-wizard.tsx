@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowUpDown, Ban, CheckCircle2, FilePenLine, Info, Loader2, ShieldAlert } from "lucide-react";
 
 type Intent = "void" | "text" | "amount";
 type Issued = { id: string; folio: string; label: string };
+type ReferenceDocument = { id: string; kind: string; label: string; folio: string; receiver: string; amount: number };
 
 const choices = [
   { id: "void" as const, icon: Ban, title: "Anular completamente", detail: "La operación no debió existir o corresponde anular una nota de débito." },
@@ -16,20 +17,29 @@ const choices = [
 export function CorrectionWizard() {
   const [intent, setIntent] = useState<Intent>("void");
   const [direction, setDirection] = useState<"down" | "up">("down");
-  const [reference, setReference] = useState("FACTURA 33 · FOLIO 8.412");
+  const [documents, setDocuments] = useState<ReferenceDocument[]>([]);
+  const [reference, setReference] = useState("");
   const [reason, setReason] = useState("Corrección solicitada por el cliente");
   const [amount, setAmount] = useState(10000);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [issued, setIssued] = useState<Issued | null>(null);
+  const idempotencyKey = useRef<string | null>(null);
   const result = correctionResult(intent, direction);
+  const original = documents.find(document => document.id === reference);
+  const resetIssue = () => { setIssued(null); setError(""); idempotencyKey.current = null; };
+  useEffect(() => { fetch("/api/demo/fiscal-documents").then(response => response.json()).then((rows: ReferenceDocument[]) => { const eligible = rows.filter(row => ["33", "34", "56"].includes(row.kind)); setDocuments(eligible); setReference(current => current || eligible[0]?.id || ""); }); }, []);
 
   async function issue() {
     setLoading(true); setError(""); setIssued(null);
     try {
-      const response = await fetch("/api/demo/fiscal-documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+      if (!original) throw new Error("Selecciona un documento original válido");
+      if (intent === "amount" && direction === "down" && amount > original.amount) throw new Error("La disminución no puede superar el total vigente");
+      const unitPrice = intent === "text" ? 0 : intent === "void" ? (original.kind === "34" ? original.amount : Math.round(original.amount / 1.19)) : amount;
+      idempotencyKey.current ??= crypto.randomUUID();
+      const response = await fetch("/api/demo/fiscal-documents", { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey.current }, body: JSON.stringify({
         documentType: Number(result.code), receiver: "CLIENTE SINTÉTICO SPA", itemName: result.title,
-        quantity: 1, unitPrice: intent === "text" ? 0 : amount, referenceId: reference, reason,
+        quantity: 1, unitPrice, referenceId: reference, reason, exempt: original.kind === "34",
       }) });
       const body = await response.json();
       if (!response.ok) throw new Error(body.detail ?? "No fue posible emitir la corrección");
@@ -42,12 +52,13 @@ export function CorrectionWizard() {
     <Link href="/emitir" className="back-link"><ArrowLeft size={15} /> Volver a tipos de documento</Link>
     <header className="page-header"><div><p className="eyebrow">Asistente legal · Sandbox</p><h1>¿Qué necesitas corregir?</h1><p>Primero define la intención. Completo elegirá el documento y bloqueará combinaciones incompatibles.</p></div><span className="demo-action">Builders 56/61 activos · backend sandbox</span></header>
     <div className="correction-layout">
-      <section className="panel correction-choices">{choices.map(({ id, icon: Icon, title, detail }) => <button className={intent === id ? "selected" : ""} key={id} type="button" onClick={() => { setIntent(id); setIssued(null); }}><span><Icon size={19} /></span><div><strong>{title}</strong><p>{detail}</p></div>{intent === id && <CheckCircle2 size={17} />}</button>)}{intent === "amount" && <div className="direction-choice"><button className={direction === "down" ? "active" : ""} type="button" onClick={() => setDirection("down")}>Disminuir monto</button><button className={direction === "up" ? "active" : ""} type="button" onClick={() => setDirection("up")}>Aumentar monto</button></div>}</section>
+      <section className="panel correction-choices">{choices.map(({ id, icon: Icon, title, detail }) => <button className={intent === id ? "selected" : ""} key={id} type="button" onClick={() => { setIntent(id); resetIssue(); }}><span><Icon size={19} /></span><div><strong>{title}</strong><p>{detail}</p></div>{intent === id && <CheckCircle2 size={17} />}</button>)}{intent === "amount" && <div className="direction-choice"><button className={direction === "down" ? "active" : ""} type="button" onClick={() => { setDirection("down"); resetIssue(); }}>Disminuir monto</button><button className={direction === "up" ? "active" : ""} type="button" onClick={() => { setDirection("up"); resetIssue(); }}>Aumentar monto</button></div>}</section>
       <aside className="panel legal-result">
         <p className="eyebrow">Resultado documental</p><div className="result-code"><span>{result.code}</span><div><strong>{result.title}</strong><p>{result.reference}</p></div></div>
-        <label>Documento original<input value={reference} onChange={(event) => setReference(event.target.value)} /></label>
-        <label>Motivo<input value={reason} onChange={(event) => setReason(event.target.value)} /></label>
-        {intent !== "text" && <label>Monto de la corrección<input type="number" min="1" value={amount} onChange={(event) => setAmount(Number(event.target.value))} /></label>}
+        <label>Documento original<select value={reference} onChange={(event) => { setReference(event.target.value); resetIssue(); }}>{documents.map(document => <option key={document.id} value={document.id}>{document.label} · folio {document.folio} · ${document.amount.toLocaleString("es-CL")}</option>)}</select></label>
+        <label>Motivo<input value={reason} onChange={(event) => { setReason(event.target.value); resetIssue(); }} /></label>
+        {intent === "void" && original && <div className="form-notice"><Info size={16}/><p>La anulación copiará automáticamente el total vigente de ${original.amount.toLocaleString("es-CL")}.</p></div>}
+        {intent === "amount" && <label>Monto neto de la diferencia<input type="number" min="1" value={amount} onChange={(event) => { setAmount(Number(event.target.value)); resetIssue(); }} /></label>}
         <ul>{result.rules.map((rule) => <li key={rule}><CheckCircle2 size={14} /> {rule}</li>)}</ul>
         <div className="legal-warning"><ShieldAlert size={18} /><p>{result.warning}</p></div>
         <div className="form-notice"><Info size={16} /><p>El simulador crea folio, firma, eventos y relación inmutable. No llama al SII ni consume CAF.</p></div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, Info, Loader2, MapPin, PackageCheck, ShieldCheck, Truck } from "lucide-react";
 
 type Reason = "sale" | "pending" | "internal" | "return" | "consignment";
@@ -28,15 +28,17 @@ export function DispatchWizard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [issued, setIssued] = useState<{ id: string; folio: string } | null>(null);
+  const idempotencyKey = useRef<string | null>(null);
   const selected = reasons[reason];
   const net = useMemo(() => selected.valued ? Math.max(0, quantity * price) : 0, [selected, quantity, price]);
   const vat = Math.round(net * .19);
-  const reset = () => { setValidated(false); setIssued(null); setError(""); };
+  const reset = () => { setValidated(false); setIssued(null); setError(""); idempotencyKey.current = null; };
 
   async function issue() {
     setLoading(true); setError(""); setIssued(null);
     try {
-      const response = await fetch("/api/demo/fiscal-documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+      idempotencyKey.current ??= crypto.randomUUID();
+      const response = await fetch("/api/demo/fiscal-documents", { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey.current }, body: JSON.stringify({
         documentType: 52, receiver, itemName: `${quantity} unidades · ${selected.label}`, quantity,
         unitPrice: selected.valued ? price : 0, reason: `Motivo SII ${selected.code}; destino ${destination}, ${commune}; patente ${plate}`,
       }) });

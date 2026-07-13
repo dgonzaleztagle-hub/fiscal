@@ -19,6 +19,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "npm run dev -- --hostname 127.0.0.1 --port 3002",
+    env: { ...process.env, FISCAL_RUNTIME_MODE: "demo", FISCAL_API_URL: "http://127.0.0.1:9", FISCAL_API_TOKEN: "police-must-never-use-this" },
     url: "http://127.0.0.1:3002",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

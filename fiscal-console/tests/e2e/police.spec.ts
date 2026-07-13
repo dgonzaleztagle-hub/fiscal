@@ -162,7 +162,7 @@ test("una boleta sandbox pasa por backend y queda visible", async ({ page }) => 
 
 test("correcciones y representaciones sandbox atraviesan el backend", async ({ page }) => {
   await page.goto("/emitir/correccion");
-  await page.getByLabel("Documento original").fill("FACTURA 33 · FOLIO 9001");
+  await expect(page.getByLabel("Documento original")).not.toHaveValue("");
   await page.getByLabel("Motivo").fill("Anulación de ensayo policial");
   await page.getByRole("button", { name: "Emitir corrección en sandbox" }).click();
   await expect(page.getByText(/Nota de crédito electrónica · folio/)).toBeVisible();

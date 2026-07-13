@@ -7,6 +7,7 @@
     "build": "next build",
     "lint": "eslint . --max-warnings=0",
     "test:e2e": "playwright test",
+    "test:police:obsessive": "playwright test tests/e2e/obsessive-police.spec.ts --project=desktop-chromium --workers=1",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "generate:api": "openapi-typescript ../dte-engine/build/openapi.json -o lib/api.generated.ts"
