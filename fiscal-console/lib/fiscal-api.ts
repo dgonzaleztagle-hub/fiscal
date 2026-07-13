@@ -32,14 +32,14 @@ export type EngineSectionResult<T> = { data: T | null; source: "engine" | "demo"
 export async function fiscalSection<T>(path: string): Promise<EngineSectionResult<T>> {
   const baseUrl = process.env.FISCAL_API_URL;
   const token = process.env.FISCAL_API_TOKEN;
-  if (!baseUrl || !token) return { data: null, source: "demo" };
+  if (!baseUrl || !token) return { data: await sandboxSection<T>(path), source: "demo" };
   try {
     const response = await engineFetch(path, baseUrl, token);
     if (response.status === 404) return { data: null, source: "engine" };
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return { data: await response.json() as T, source: "engine" };
   } catch (error) {
-    return { data: null, source: "demo", warning: error instanceof Error ? error.message : "Motor no disponible" };
+    return { data: await sandboxSection<T>(path), source: "demo", warning: error instanceof Error ? error.message : "Motor no disponible" };
   }
 }
 
@@ -137,4 +137,22 @@ function engineFetch(path: string, baseUrl: string, token: string) {
 
 function slice(rows: DemoDocument[], limit?: number) {
   return limit ? rows.slice(0, limit) : rows;
+}
+
+async function sandboxSection<T>(path: string): Promise<T | null> {
+  if (!path.includes("/close/snapshots")) return null;
+  const documents = (await loadDemoState()).documents;
+  const sign = (kind: string) => kind === "61" ? -1 : 1;
+  const salesDocuments = documents.filter(row => ["33", "34", "39", "41", "61"].includes(row.kind));
+  const salesTotal = salesDocuments.reduce((sum, row) => sum + sign(row.kind) * row.amount, 0);
+  const salesVat = salesDocuments.reduce((sum, row) => sum + sign(row.kind) * row.vat, 0);
+  const purchaseTotal = 632_400, purchaseVat = 68_400, withholding = 6_863, ppm = 24_400;
+  const totalPayable = Math.max(0, salesVat - purchaseVat + withholding + ppm);
+  const lines = [
+    { code: "sales_vat", label: "Débito fiscal por ventas", amount: salesVat, sii_amount: salesVat, state: "matched" },
+    { code: "purchase_vat", label: "Crédito fiscal por compras", amount: purchaseVat, sii_amount: purchaseVat, state: "matched" },
+    { code: "second_category_withholding", label: "Retención honorarios", amount: withholding, sii_amount: withholding, state: "matched" },
+    { code: "ppm", label: "PPM neto determinado", amount: ppm, sii_amount: ppm, state: "matched" },
+  ];
+  return [{ version: Math.max(1, documents.length - 4), payload: { sales: { total: salesTotal, vat: salesVat }, purchases: { total: purchaseTotal, vat: purchaseVat }, total_payable: totalPayable, ppm, lines } }] as T;
 }

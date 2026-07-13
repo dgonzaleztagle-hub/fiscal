@@ -156,4 +156,6 @@ test("una boleta sandbox pasa por backend y queda visible", async ({ page }) => 
   await expect(page.getByRole("link", { name: "Inicio", exact: true })).toBeVisible();
   await page.getByRole("link", { name: "← Volver al listado" }).click();
   await expect(page.getByText("$54.321")).toBeVisible();
+  await page.goto("/f29");
+  await expect(page.locator(".summary-card").filter({ hasText: "Débito fiscal" })).toContainText("$77.230");
 });
