@@ -1,0 +1,21 @@
+{
+  "name": "completo-fiscal",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "fiscal-console"
+  ],
+  "scripts": {
+    "build": "npm --workspace fiscal-console run build",
+    "typecheck": "npm --workspace fiscal-console run typecheck",
+    "lint": "npm --workspace fiscal-console run lint"
+  },
+  "dependencies": {
+    "next": "16.2.10",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
