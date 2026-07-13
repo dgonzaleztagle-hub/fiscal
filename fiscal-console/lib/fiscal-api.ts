@@ -1,6 +1,7 @@
 import "server-only";
 import type { components } from "./api.generated";
-import { demoDocuments, type DemoDocument } from "./demo-data";
+import type { DemoDocument } from "./demo-data";
+import { demoBackendConfigured, loadDemoState } from "./demo-store";
 
 type DocumentResponse = components["schemas"]["DocumentResponse"];
 type EventResponse = components["schemas"]["EventResponse"];
@@ -12,7 +13,7 @@ const labels: Record<number, string> = {
 
 export type FiscalDocumentsResult = {
   rows: DemoDocument[];
-  source: "engine" | "demo";
+  source: "engine" | "sandbox" | "demo";
   warning?: string;
 };
 
@@ -22,7 +23,7 @@ export type FiscalDocumentDetail = DemoDocument & {
   xmlSha256: string;
   publicUrl?: string;
   events: EventResponse[];
-  source: "engine" | "demo";
+  source: "engine" | "sandbox" | "demo";
   warning?: string;
 };
 
@@ -46,7 +47,8 @@ export async function fiscalDocuments(limit?: number): Promise<FiscalDocumentsRe
   const baseUrl = process.env.FISCAL_API_URL;
   const token = process.env.FISCAL_API_TOKEN;
   if (!baseUrl || !token) {
-    return { rows: slice(demoDocuments, limit), source: "demo" };
+    const state = await loadDemoState();
+    return { rows: slice(state.documents, limit), source: demoBackendConfigured() ? "sandbox" : "demo" };
   }
   try {
     const url = new URL("/v1/fiscal-documents", baseUrl);
@@ -63,9 +65,10 @@ export async function fiscalDocuments(limit?: number): Promise<FiscalDocumentsRe
       rows: payload.map(mapDocument),
     };
   } catch (error) {
+    const state = await loadDemoState();
     return {
-      rows: slice(demoDocuments, limit),
-      source: "demo",
+      rows: slice(state.documents, limit),
+      source: demoBackendConfigured() ? "sandbox" : "demo",
       warning: error instanceof Error ? error.message : "Motor no disponible",
     };
   }
@@ -94,7 +97,7 @@ export async function fiscalDocument(id: string): Promise<FiscalDocumentDetail |
       source: "engine",
     };
   } catch (error) {
-    const fallback = demoDetail(id);
+    const fallback = await demoDetail(id);
     return fallback ? { ...fallback, warning: error instanceof Error ? error.message : "Motor no disponible" } : null;
   }
 }
@@ -117,16 +120,12 @@ function mapDocument(record: DocumentResponse): DemoDocument {
   };
 }
 
-function demoDetail(id: string): FiscalDocumentDetail | null {
-  const document = demoDocuments.find((item) => item.id === id);
+async function demoDetail(id: string): Promise<FiscalDocumentDetail | null> {
+  const document = (await loadDemoState()).documents.find((item) => item.id === id);
   if (!document) return null;
   return {
     ...document,
-    documentId: `DEMO-${document.kind}-${document.folio}`,
-    taxpayerRut: "12.345.678-5",
-    xmlSha256: "Datos sintéticos: el hash real aparecerá al conectar el motor local.",
-    events: [{ sequence: 1, event_type: "demo_created", occurred_at: "2026-07-11T12:00:00Z", metadata: { synthetic: true } }],
-    source: "demo",
+    source: demoBackendConfigured() ? "sandbox" : "demo",
   };
 }
 

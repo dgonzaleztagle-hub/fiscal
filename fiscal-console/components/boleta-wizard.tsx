@@ -10,6 +10,9 @@ export function BoletaWizard() {
   const [price, setPrice] = useState(12990);
   const [exempt, setExempt] = useState(false);
   const [validated, setValidated] = useState(false);
+  const [issuing, setIssuing] = useState(false);
+  const [issued, setIssued] = useState<{ id: string; folio: string } | null>(null);
+  const [error, setError] = useState("");
   const draftLoaded = useRef(false);
   useEffect(() => {
     const stored = window.sessionStorage.getItem("completo-fiscal:boleta-draft");
@@ -35,6 +38,18 @@ export function BoletaWizard() {
   const total = useMemo(() => Math.max(0, quantity * price), [quantity, price]);
   const type = exempt ? 41 : 39;
 
+  async function issueInSandbox() {
+    setIssuing(true); setError("");
+    try {
+      const response = await fetch("/api/demo/fiscal-documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ documentType: type, receiver: "Consumidor final", itemName: name, quantity, unitPrice: price }) });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.detail ?? "No fue posible emitir");
+      setIssued({ id: payload.id, folio: payload.folio });
+      window.sessionStorage.removeItem("completo-fiscal:boleta-draft");
+    } catch (failure) { setError(failure instanceof Error ? failure.message : "No fue posible emitir"); }
+    finally { setIssuing(false); }
+  }
+
   return <div className="page section-page wizard-page">
     <Link href="/emitir" className="back-link"><ArrowLeft size={15} /> Volver a tipos de documento</Link>
     <header className="page-header"><div><p className="eyebrow">Emisión guiada · Paso 1 de 3</p><h1>Registrar una venta</h1><p>Completo elegirá la boleta correcta según la tributación de cada producto.</p></div><span className="demo-action">Ensayo sin folios</span></header>
@@ -46,8 +61,11 @@ export function BoletaWizard() {
         <label className="tax-choice"><input type="checkbox" checked={exempt} onChange={(event) => { setExempt(event.target.checked); setValidated(false); }} /><span><strong>Este producto está exento de IVA</strong><small>Márcalo sólo si su clasificación tributaria fue configurada como exenta.</small></span></label>
         <div className="form-notice"><Info size={17} /><p>El precio se ingresa con impuestos incluidos. El motor calcula y redondea los montos tributarios.</p></div>
         <button className="primary-button" type="submit">Revisar antes de emitir</button>
+        {validated && !issued && <button className="secondary-button" type="button" disabled={issuing} onClick={issueInSandbox}>{issuing ? "Procesando…" : "Emitir en sandbox"}</button>}
+        {error && <p className="form-error">{error}</p>}
+        {issued && <div className="validation-success" role="status"><CheckCircle2 size={18}/><div><strong>Boleta procesada por el backend</strong><p>Folio sintético {issued.folio} · respuesta aceptada por el simulador SII.</p><Link href={`/documentos/${issued.id}`}>Abrir documento →</Link></div></div>}
       </form>
-      <aside className="panel tax-preview"><p className="eyebrow">Resultado tributario</p><div className="document-preview"><span>{type}</span><div><strong>{exempt ? "Boleta exenta electrónica" : "Boleta electrónica"}</strong><p>Se elegirá automáticamente al confirmar.</p></div></div><dl><div><dt>Ítem</dt><dd>{name || "Sin nombre"}</dd></div><div><dt>Subtotal</dt><dd>{formatCurrency(total)}</dd></div>{!exempt && <><div><dt>Neto incluido</dt><dd>{formatCurrency(Math.round(total / 1.19))}</dd></div><div><dt>IVA incluido</dt><dd>{formatCurrency(total - Math.round(total / 1.19))}</dd></div></>}<div className="total-row"><dt>Total</dt><dd>{formatCurrency(total)}</dd></div></dl>{validated ? <div className="validation-success"><CheckCircle2 size={18} /><div><strong>Borrador coherente</strong><p>La siguiente etapa pedirá confirmación explícita. En demo no se firma ni consume folio.</p></div></div> : <div className="preview-guard"><ShieldCheck size={17} /> Nada se emitirá desde esta pantalla.</div>}</aside>
+      <aside className="panel tax-preview"><p className="eyebrow">Resultado tributario</p><div className="document-preview"><span>{type}</span><div><strong>{exempt ? "Boleta exenta electrónica" : "Boleta electrónica"}</strong><p>Se elegirá automáticamente al confirmar.</p></div></div><dl><div><dt>Ítem</dt><dd>{name || "Sin nombre"}</dd></div><div><dt>Subtotal</dt><dd>{formatCurrency(total)}</dd></div>{!exempt && <><div><dt>Neto incluido</dt><dd>{formatCurrency(Math.round(total / 1.19))}</dd></div><div><dt>IVA incluido</dt><dd>{formatCurrency(total - Math.round(total / 1.19))}</dd></div></>}<div className="total-row"><dt>Total</dt><dd>{formatCurrency(total)}</dd></div></dl>{validated ? <div className="validation-success"><CheckCircle2 size={18} /><div><strong>Borrador coherente</strong><p>El backend reservará un folio sintético, firmará la simulación y registrará sus eventos. Nunca se conecta al SII.</p></div></div> : <div className="preview-guard"><ShieldCheck size={17} /> Nada se emitirá desde esta pantalla.</div>}</aside>
     </div>
   </div>;
 }

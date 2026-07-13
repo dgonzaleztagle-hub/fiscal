@@ -17,11 +17,24 @@ export function InvoiceWizard() {
   const [exempt, setExempt] = useState(false);
   const [credit, setCredit] = useState(false);
   const [validated, setValidated] = useState(false);
+  const [issuing, setIssuing] = useState(false);
+  const [issued, setIssued] = useState<{ id: string; folio: string } | null>(null);
+  const [error, setError] = useState("");
   const net = useMemo(() => Math.max(0, quantity * netPrice), [quantity, netPrice]);
   const vat = exempt ? 0 : Math.round(net * 0.19);
   const type = exempt ? 34 : 33;
 
   const resetValidation = () => setValidated(false);
+  async function issueInSandbox() {
+    setIssuing(true); setError("");
+    try {
+      const response = await fetch("/api/demo/fiscal-documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ documentType: type, receiver, itemName: name, quantity, unitPrice: netPrice }) });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.detail ?? "No fue posible emitir");
+      setIssued({ id: payload.id, folio: payload.folio });
+    } catch (failure) { setError(failure instanceof Error ? failure.message : "No fue posible emitir"); }
+    finally { setIssuing(false); }
+  }
   return <div className="page section-page wizard-page">
     <Link href="/emitir" className="back-link"><ArrowLeft size={15} /> Volver a tipos de documento</Link>
     <header className="page-header"><div><p className="eyebrow">Emisión guiada · Facturas 33/34</p><h1>Facturar a una empresa</h1><p>El receptor, los precios netos y la forma de pago se validan antes de reservar un folio.</p></div><span className="demo-action">Ensayo sin folios</span></header>
@@ -38,8 +51,11 @@ export function InvoiceWizard() {
         {credit && <label>Fecha de vencimiento<input type="date" defaultValue="2026-08-10" required onChange={resetValidation} /></label>}
         <div className="form-notice"><Info size={17} /><p>A diferencia de una boleta, aquí el precio afecto se ingresa neto. El IVA se calcula sobre el neto total y se redondea en pesos.</p></div>
         <button className="primary-button" type="submit">Validar borrador</button>
+        {validated && !issued && <button className="secondary-button" type="button" disabled={issuing} onClick={issueInSandbox}>{issuing ? "Procesando…" : "Emitir en sandbox"}</button>}
+        {error && <p className="form-error">{error}</p>}
+        {issued && <div className="validation-success" role="status"><CheckCircle2 size={18}/><div><strong>Factura procesada por el backend</strong><p>Folio sintético {issued.folio} · respuesta aceptada por el simulador SII.</p><Link href={`/documentos/${issued.id}`}>Abrir documento →</Link></div></div>}
       </form>
-      <aside className="panel tax-preview"><p className="eyebrow">Resultado tributario</p><div className="document-preview"><span>{type}</span><div><strong>{exempt ? "Factura exenta electrónica" : "Factura electrónica"}</strong><p>{credit ? "Venta a crédito · con vencimiento" : "Venta al contado"}</p></div></div><div className="receiver-preview"><Building2 size={17} /><div><strong>{receiver || "Receptor sin nombre"}</strong><p>{rut || "RUT pendiente"} · {commune || "Comuna pendiente"}</p><small>{email || "Correo pendiente"}</small></div></div><dl><div><dt>Neto</dt><dd>{formatCurrency(net)}</dd></div>{!exempt && <div><dt>IVA 19%</dt><dd>{formatCurrency(vat)}</dd></div>}<div className="total-row"><dt>Total</dt><dd>{formatCurrency(net + vat)}</dd></div></dl>{validated ? <div className="validation-success"><CheckCircle2 size={18} /><div><strong>Borrador coherente</strong><p>El motor 33/34, TED, firma, PDF e intercambio están activos. En demo no se consume CAF.</p></div></div> : <div className="preview-guard"><ShieldCheck size={17} /> Nada se emitirá desde esta pantalla.</div>}</aside>
+      <aside className="panel tax-preview"><p className="eyebrow">Resultado tributario</p><div className="document-preview"><span>{type}</span><div><strong>{exempt ? "Factura exenta electrónica" : "Factura electrónica"}</strong><p>{credit ? "Venta a crédito · con vencimiento" : "Venta al contado"}</p></div></div><div className="receiver-preview"><Building2 size={17} /><div><strong>{receiver || "Receptor sin nombre"}</strong><p>{rut || "RUT pendiente"} · {commune || "Comuna pendiente"}</p><small>{email || "Correo pendiente"}</small></div></div><dl><div><dt>Neto</dt><dd>{formatCurrency(net)}</dd></div>{!exempt && <div><dt>IVA 19%</dt><dd>{formatCurrency(vat)}</dd></div>}<div className="total-row"><dt>Total</dt><dd>{formatCurrency(net + vat)}</dd></div></dl>{validated ? <div className="validation-success"><CheckCircle2 size={18} /><div><strong>Borrador coherente</strong><p>El backend sandbox calculará, reservará un folio sintético y registrará toda la simulación sin conectarse al SII.</p></div></div> : <div className="preview-guard"><ShieldCheck size={17} /> Nada se emitirá desde esta pantalla.</div>}</aside>
     </div>
   </div>;
 }

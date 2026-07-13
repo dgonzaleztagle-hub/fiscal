@@ -8,7 +8,7 @@ export async function DocumentTable({ limit }: { limit?: number }) {
   const { rows, source, warning } = await fiscalDocuments(limit);
   return (
     <div className="table-wrap">
-      <div className={`data-source ${source}`}>{source === "engine" ? "Motor local conectado" : "Datos demostrativos"}{warning ? ` · ${warning}` : ""}</div>
+      <div className={`data-source ${source}`}>{source === "engine" ? "Motor fiscal conectado" : source === "sandbox" ? "Backend sandbox conectado · persistencia aislada" : "Datos demostrativos"}{warning ? ` · ${warning}` : ""}</div>
       <table className="documents-table">
         <thead><tr><th>Documento</th><th>Receptor</th><th>Emisión</th><th>Monto</th><th>Estado</th><th><span className="sr-only">Acciones</span></th></tr></thead>
         <tbody>{rows.map((row) => (

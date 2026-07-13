@@ -143,3 +143,17 @@ test("el borrador de boleta sobrevive a una salida accidental", async ({ page })
   await page.goto("/emitir/boleta");
   await expect(page.getByLabel("Producto o servicio")).toHaveValue("Borrador que no debe perderse");
 });
+
+test("una boleta sandbox pasa por backend y queda visible", async ({ page }) => {
+  await page.goto("/emitir/boleta");
+  await page.getByLabel("Producto o servicio").fill("Almuerzo de prueba contable");
+  await page.getByLabel("Precio final unitario").fill("54321");
+  await page.getByRole("button", { name: "Revisar antes de emitir" }).click();
+  await page.getByRole("button", { name: "Emitir en sandbox" }).click();
+  await expect(page.getByText("Boleta procesada por el backend")).toBeVisible();
+  await page.getByRole("link", { name: "Abrir documento →" }).click();
+  await expect(page.getByText("accepted by sii simulator")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Inicio", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "← Volver al listado" }).click();
+  await expect(page.getByText("$54.321")).toBeVisible();
+});
